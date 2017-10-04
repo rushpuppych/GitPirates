@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <!-- Required meta tags -->
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
+    <!-- Bootstrap CSS -->
+    <link rel="stylesheet" href="node_modules/bootstrap/dist/css/bootstrap.min.css">
+
+    <!-- Fontawesome -->
+    <link rel="stylesheet" href="node_modules/font-awesome/css/font-awesome.min.css">
+  </head>
+  <body>
+    <!-- Body -->
+    <div id="CodePirate"></div>
+
+    <!-- Optional JavaScript -->
+    <!-- jQuery first, then Popper.js, then Bootstrap JS -->
+    <script src="node_modules/jquery/dist/jquery.min.js"></script>
+    <script src="node_modules/popper.js/dist/popper.min.js"></script>
+    <script src="node_modules/bootstrap/dist/js/bootstrap.min.js"></script>
+    <script src="app/vendor/kiwi-js-v1.4.0/kiwi.min.js"></script>
+
+    <!--Application  -->
+    <script src="app/App.js"></script>
+    <script src="app/lib/Helper.js"></script>
+    <script src="app/gameObjects/ShipGameObject.js"></script>
+
+    <!-- States -->
+    <script src="app/states/PlayGameState.js"></script>
+
+    <!-- Main Method -->
+    <script>
+    $(function() {
+      var objApp = new App();
+    });
+    </script>
+  </body>
+</html>
