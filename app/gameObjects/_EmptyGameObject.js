@@ -3,9 +3,10 @@
  * @description
  * CodePirate is a Programming learning Game for Geeks
  */
-var _EmptyGameObject = function(state, options) {
+var _EmptyGameObject = function(game, state, options) {
   var $this = this;
   var _private = {};
+  var _game = game;
   var _state = state;
   var helper = new Helper();
 

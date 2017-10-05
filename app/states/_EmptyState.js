@@ -3,9 +3,10 @@
  * @description
  * CodePirate is a Programming learning Game for Geeks
  */
-var _EmptyState = function(options) {
+var _EmptyState = function(game, options) {
   var $this = this;
   var _private = {};
+  var _game = game;
   var _state = new Kiwi.State('_EmptyState');
 
   // CodePirate System Variables

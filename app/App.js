@@ -17,13 +17,14 @@ var App = function(options) {
    * Constructor
    */
   this.init = function() {
-    // Register States
-    _private.registerState('PlayGameState', new PlayGameState());
-
     // Create New Game
     _private.createGame();
 
+    // Register States
+    _private.registerState('PlayGameState', new PlayGameState($this.options.game));
+
     // Run Game
+    _private.createStates();
     $this.options.game.states.switchState("PlayGameState");
   };
 
@@ -59,14 +60,23 @@ var App = function(options) {
     }
     var objGame = new Kiwi.Game('CodePirate', 'CodePirate', null, objOptions);
 
-    // Add States
-    for(var strKey in $this.options.states) {
-        var objState = $this.options.states[strKey];
-        objGame.states.addState(objState.getState());
-    }
-
     // Set Main Game Object
     $this.options.game = objGame;
+  };
+
+  /**
+   * createStates
+   * @description
+   * This is adding the GameStates to the Game Object
+   *
+   * @param void
+   * @return void
+   */
+  _private.createStates = function() {
+    for(var strKey in $this.options.states) {
+        var objState = $this.options.states[strKey];
+        $this.options.game.states.addState(objState.getState());
+    }
   };
 
   // Constructor Call

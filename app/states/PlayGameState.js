@@ -3,9 +3,10 @@
  * @description
  * CodePirate is a Programming learning Game for Geeks
  */
-var PlayGameState = function(options) {
+var PlayGameState = function(game, options) {
   var $this = this;
   var _private = {};
+  var _game = game;
   var _state = new Kiwi.State('PlayGameState');
 
   // CodePirate System Variables
@@ -19,12 +20,16 @@ var PlayGameState = function(options) {
    */
   this.init = function() {
     setTimeout(function() {
-      var objPlayer = new ShipGameObject(_state);
+      var objPlayer = new ShipGameObject(_game, _state);
       $this.addPlayer(objPlayer);
-
-
       runDemo(objPlayer, 0);
     }, 1000);
+
+    setTimeout(function() {
+      var objPlayer = new ShipGameObject(_game, _state);
+      $this.addPlayer(objPlayer);
+      runDemo(objPlayer, 0);
+    }, 5000);    
   };
 
   /**
@@ -190,12 +195,9 @@ function runDemo(objPlayer, numStep) {
   orderList[62] = 'TURN_LEFT';
   orderList[63] = 'TURN_LEFT';
 
-
-
-
   // Execute Next Step
   if(objPlayer.isIdle()) {
-    console.log(numStep);
+    //console.log(numStep);
     objPlayer.setOrder(orderList[numStep]);
     numStep++;
     if(typeof(orderList[numStep]) == 'undefined') {
