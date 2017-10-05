@@ -109,8 +109,19 @@ var ShipGameObject = function(game, state, options) {
       break;
 
       case 'LOAD_CANNON':
-        $this.options.status = 'turn';
-        _private.turnRight();
+        $this.options.status = 'loading';
+        // todo: _private.loadCannon();
+      break;
+
+      case 'FIRE_CANNON':
+        $this.options.status = 'fire';
+        // todo: _private.fireCannon();
+      break;
+
+      case 'ACTION':
+        $this.options.status = 'action';
+        // take something, activate etc, etc, this is the key
+        // todo: _private.action();
       break;
     }
 
