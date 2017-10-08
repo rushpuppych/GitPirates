@@ -24,14 +24,6 @@ var PlayGameState = function(game, options) {
       $this.addPlayer(objPlayer);
       runDemo(objPlayer, 0);
     }, 1000);
-
-    /*
-    setTimeout(function() {
-      var objPlayer = new ShipGameObject(_game, _state);
-      $this.addPlayer(objPlayer);
-      runDemo(objPlayer, 0);
-    }, 5000);
-    */
   };
 
   /**
@@ -137,8 +129,6 @@ function runDemo(objPlayer, numStep) {
   orderList[1] = 'TURN_LEFT';
   orderList[2] = 'MOVE_FORWARDS';
   orderList[3] = 'FIRE_CANNON';
-
-
 
   // Execute Next Step
   if(objPlayer.isIdle()) {

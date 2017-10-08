@@ -19,6 +19,7 @@
   <body>
     <!-- Body -->
     <div id="CodePirate"></div>
+    <div id="Grid"></div>
 
     <!-- Optional JavaScript -->
     <!-- jQuery first, then Popper.js, then Bootstrap JS -->
@@ -39,6 +40,13 @@
     <script>
     $(function() {
       var objApp = new App();
+
+      for(var numX = 0; numX < 10; numX++) {
+        for(var numY = 0; numY < 10; numY++) {
+          $('#Grid').append('<div style="position: absolute; top:' + numY*64 + 'px; left:' + numX*64 + 'px; width: 64px; height: 64px; border: 1px solid #000000;"></div>')
+        }
+      }
+
     });
     </script>
   </body>
