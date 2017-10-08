@@ -17,11 +17,13 @@ var ShipGameObject = function(game, state, options) {
     status: 'idle',
     direction: 'S',
     current_order: 'none',
+    current_order_parameter: {},
     player_name: 'RushPuppy',
     health: 100,
     cannon_loads: 0,
     hud: {
       playerText: {},
+      actionText: {},
       healthBar: {},
       cannonBar: {}
     },
@@ -33,6 +35,7 @@ var ShipGameObject = function(game, state, options) {
       turnLeft: 0,
       turnRight: 0,
       loadCannon: 0,
+      fireCannon: 0
     },
     position: {
       tile_x: 1,
@@ -50,30 +53,44 @@ var ShipGameObject = function(game, state, options) {
     $this.options.gameObject = objShip;
     $this.setTiledPositionInTiles(2, 4);
 
-    // Create Player Name textures
+    // Smoke SpriteSheet
+    var objSmoke = new Kiwi.GameObjects.Sprite(_state, 'smoke');
+  	objSmoke.animation.add('fire', [0, 1, 2, 3, 4, 5, 6, 7, 8, 9], 0.05);
+    objSmoke.visible = false;
+  	_state.addChild(objSmoke);
+    $this.options.hud.smoke = objSmoke;
+
+    // Create Player Name Text
     var objPlayerText = new Kiwi.HUD.Widget.TextField (_game, $this.options.player_name, objShip.x, objShip.y - 22);
     objPlayerText.style.fontFamily = "Germania One";
     objPlayerText.style.fontSize = "14px";
     objPlayerText.style.color = "#000000";
-
     _game.huds.defaultHUD.addWidget(objPlayerText);
     $this.options.hud.playerText = objPlayerText;
 
+    // Create Player Action Text
+    var objActionText = new Kiwi.HUD.Widget.TextField (_game, "", objShip.x, objShip.y + 60);
+    objActionText.style.fontFamily = "Germania One";
+    objActionText.style.fontSize = "30px";
+    objActionText.style.color = "#610B0B";
+    _game.huds.defaultHUD.addWidget(objActionText);
+    $this.options.hud.actionText = objActionText;
+
     // Create Health Bar
-    var objBackground = new Kiwi.HUD.Widget.Bar(_game, 100, 100, objShip.x - 1, objShip.y - 1, 52, 7, '#000000' );
+    var objBackground = new Kiwi.HUD.Widget.Bar(_game, 100, 100, objShip.x - 1, objShip.y - 1, 72, 7, '#000000' );
     _game.huds.defaultHUD.addWidget(objBackground);
     $this.options.hud.healthBar.bg = objBackground;
 
-    var objHealthBar = new Kiwi.HUD.Widget.Bar(_game, $this.options.health, 100, objShip.x, objShip.y, 50, 5, '#ff0000' );
+    var objHealthBar = new Kiwi.HUD.Widget.Bar(_game, $this.options.health, 100, objShip.x, objShip.y, 70, 5, '#ff0000' );
     _game.huds.defaultHUD.addWidget(objHealthBar);
     $this.options.hud.healthBar.bar = objHealthBar;
 
     // Create Cannon Bar
-    var objBackground = new Kiwi.HUD.Widget.Bar(_game, 100, 100, objShip.x - 1, objShip.y + 9, 52, 7, '#000000' );
+    var objBackground = new Kiwi.HUD.Widget.Bar(_game, 100, 100, objShip.x - 1, objShip.y + 9, 72, 7, '#000000' );
     _game.huds.defaultHUD.addWidget(objBackground);
     $this.options.hud.cannonBar.bg = objBackground;
 
-    var objCannonBar = new Kiwi.HUD.Widget.Bar(_game, $this.options.cannon_loads, 100, objShip.x, objShip.y + 10, 50, 5, '#2ECCFA' );
+    var objCannonBar = new Kiwi.HUD.Widget.Bar(_game, $this.options.cannon_loads, 10, objShip.x, objShip.y + 10, 70, 5, '#2ECCFA' );
     _game.huds.defaultHUD.addWidget(objCannonBar);
     $this.options.hud.cannonBar.bar = objCannonBar;
   };
@@ -110,12 +127,12 @@ var ShipGameObject = function(game, state, options) {
 
       case 'LOAD_CANNON':
         $this.options.status = 'loading';
-        // todo: _private.loadCannon();
+        _private.loadCannon();
       break;
 
       case 'FIRE_CANNON':
         $this.options.status = 'fire';
-        // todo: _private.fireCannon();
+        _private.fireCannon();
       break;
 
       case 'ACTION':
@@ -128,6 +145,7 @@ var ShipGameObject = function(game, state, options) {
     // If Finish Order is reached
     if($this.options.status == 'finish') {
       $this.options.current_order = 'none';
+      $this.options.current_order_parameter = {};
       $this.options.status = 'idle';
       $this.resetAnimationSteps();
       $this.recalcTiledPosition();
@@ -142,12 +160,16 @@ var ShipGameObject = function(game, state, options) {
    * @description
    * This sets the current order if the state allows it
    *
-   * @param strOrder    The GameObject Order that has to be executet
+   * @param strOrder      The GameObject Order that has to be executet
+   * @param objParameter  The Parameters for the Order
    * @return void
    */
-  this.setOrder = function(strOrder) {
+  this.setOrder = function(strOrder, objParameter) {
     if($this.options.current_order == 'none' && $this.options.status == 'idle') {
       $this.options.current_order = strOrder;
+      if(typeof(objParameter) != 'undefined') {
+        $this.options.current_order_parameter = objParameter;
+      }
     }
   };
 
@@ -371,6 +393,69 @@ var ShipGameObject = function(game, state, options) {
   };
 
   /**
+   * loadCannon
+   * @description
+   * Loading Cannon for 1 Point
+   *
+   * @param void
+   * @return void
+   */
+  _private.loadCannon = function() {
+    $this.options.animation_steps['loadCannon']++;
+
+    // Loading Cannon
+    if($this.options.cannon_loads < 10) {
+      $this.options.hud.actionText.text = "Cannon +1";
+    } else {
+      $this.options.hud.actionText.text = "Overload";
+    }
+
+    // Finnish Conndition
+    if($this.checkAnimationSteps('loadCannon', 80, 80)) {
+      if($this.options.cannon_loads < 10) {
+        $this.options.cannon_loads++;
+      }
+      $this.options.status = 'finish';
+      $this.options.hud.actionText.text = "";
+    }
+  };
+
+  /**
+   * fireCannon
+   * @description
+   * Fire the Cannon
+   *
+   * @param void
+   * @return void
+   */
+  _private.fireCannon = function() {
+    $this.options.animation_steps['fireCannon']++;
+
+    // Play GunFire Smoke Sprite
+    if($this.options.animation_steps['fireCannon'] == 1) {
+      var objShip = $this.getGameOject();
+      $this.options.hud.smoke.animation.play('fire');
+      $this.options.hud.smoke.visible = true;
+      $this.options.hud.smoke.rotation = 1.5 + objShip.rotation;
+      // todo: function for cannonball Position by direction
+      $this.options.hud.smoke.y = objShip.y; // + cannonball position
+      $this.options.hud.smoke.x = objShip.x; // + cannonball position
+    }
+    if($this.options.animation_steps['fireCannon'] > 40) {
+      $this.options.hud.smoke.visible = false;
+    }
+
+    // Shoot Cannonball
+    // todo: use Cannonbal Parameters
+    // $this.options.current_order_parameter
+
+    // Finnish Conndition
+    if($this.checkAnimationSteps('fireCannon', 100, 100)) {
+      $this.options.status = 'finish';
+    }
+  };
+
+  /**
    * resetAnimationSteps
    * @description
    * This Resets the Animation Step counters
@@ -456,15 +541,24 @@ var ShipGameObject = function(game, state, options) {
   $this.renderHUD = function() {
     var objShip = $this.getGameOject();
 
+    // Render Player Name
     $this.options.hud.playerText.x = objShip.x - 1;
     $this.options.hud.playerText.y = objShip.y - 22;
 
+    // Render Action Text
+    var numAnimation = $this.options.animation_steps.loadCannon;
+    $this.options.hud.actionText.x = objShip.x;
+    $this.options.hud.actionText.y = objShip.y + 60 - numAnimation;
+    $this.options.hud.actionText.style.opacity = 1 - numAnimation / 100;
+
+    // Render HealthBar
     $this.options.hud.healthBar.bg.x = objShip.x - 1;
     $this.options.hud.healthBar.bg.y = objShip.y - 1
     $this.options.hud.healthBar.bar.x = objShip.x;
     $this.options.hud.healthBar.bar.y = objShip.y
     $this.options.hud.healthBar.bar.counter.current = $this.options.healt;
 
+    // Render CannonBar
     $this.options.hud.cannonBar.bg.x = objShip.x - 1;
     $this.options.hud.cannonBar.bg.y = objShip.y + 9;
     $this.options.hud.cannonBar.bar.x = objShip.x;

@@ -25,11 +25,13 @@ var PlayGameState = function(game, options) {
       runDemo(objPlayer, 0);
     }, 1000);
 
+    /*
     setTimeout(function() {
       var objPlayer = new ShipGameObject(_game, _state);
       $this.addPlayer(objPlayer);
       runDemo(objPlayer, 0);
-    }, 5000);    
+    }, 5000);
+    */
   };
 
   /**
@@ -49,7 +51,11 @@ var PlayGameState = function(game, options) {
 
       // Load Ships and Object Sprites
       _state.addSpriteSheet('misc', 'app/assets/images/sprites/ships_miscellaneous_sheet.png', 64, 64);
+      _state.addSpriteSheet('smoke', 'app/assets/images/sprites/smoke.png', 128, 128);
       _state.addSpriteSheet('ship_01', 'app/assets/images/sprites/ship_01.png', 70, 118);
+
+      // Load Sound Effects
+      //_state.addAudio('cannon_fire', 'app/assets/sound/cannon.mp3');
   };
 
   /**
@@ -128,77 +134,15 @@ function runDemo(objPlayer, numStep) {
   // Order List
   var orderList = [];
   orderList[0] = 'MOVE_FORWARDS';
-  orderList[1] = 'MOVE_FORWARDS';
-  orderList[2] = 'TURN_LEFT';
-  orderList[3] = 'MOVE_FORWARDS';
-  orderList[4] = 'MOVE_FORWARDS';
-  orderList[5] = 'TURN_LEFT';
-  orderList[6] = 'MOVE_FORWARDS';
-  orderList[7] = 'MOVE_FORWARDS';
-  orderList[8] = 'MOVE_FORWARDS';
-  orderList[9] = 'TURN_LEFT';
-  orderList[10] = 'MOVE_FORWARDS';
-  orderList[11] = 'MOVE_FORWARDS';
-  orderList[12] = 'TURN_LEFT';
-  orderList[13] = 'MOVE_FORWARDS';
-  orderList[14] = 'MOVE_FORWARDS';
-  orderList[15] = 'MOVE_FORWARDS';
-  orderList[16] = 'TURN_LEFT';
-  orderList[17] = 'MOVE_FORWARDS';
-  orderList[18] = 'MOVE_FORWARDS';
-  orderList[19] = 'TURN_LEFT';
-  orderList[20] = 'MOVE_FORWARDS';
-  orderList[21] = 'MOVE_FORWARDS';
-  orderList[22] = 'MOVE_FORWARDS';
-  orderList[23] = 'TURN_LEFT';
-  orderList[24] = 'MOVE_FORWARDS';
-  orderList[25] = 'MOVE_FORWARDS';
-  orderList[26] = 'TURN_LEFT';
-  orderList[27] = 'MOVE_FORWARDS';
+  orderList[1] = 'TURN_LEFT';
+  orderList[2] = 'MOVE_FORWARDS';
+  orderList[3] = 'FIRE_CANNON';
 
-  orderList[28] = 'TURN_RIGHT';
-  orderList[29] = 'TURN_RIGHT';
-  orderList[30] = 'TURN_RIGHT';
-  orderList[31] = 'TURN_RIGHT';
 
-  orderList[32] = 'MOVE_FORWARDS';
-  orderList[33] = 'TURN_RIGHT';
-  orderList[34] = 'MOVE_FORWARDS';
-  orderList[35] = 'MOVE_FORWARDS';
-  orderList[36] = 'TURN_RIGHT';
-  orderList[37] = 'MOVE_FORWARDS';
-  orderList[38] = 'MOVE_FORWARDS';
-  orderList[39] = 'MOVE_FORWARDS';
-  orderList[40] = 'TURN_RIGHT';
-  orderList[41] = 'MOVE_FORWARDS';
-  orderList[42] = 'MOVE_FORWARDS';
-  orderList[43] = 'TURN_RIGHT';
-  orderList[44] = 'MOVE_FORWARDS';
-  orderList[45] = 'MOVE_FORWARDS';
-  orderList[46] = 'MOVE_FORWARDS';
-  orderList[47] = 'TURN_RIGHT';
-  orderList[48] = 'MOVE_FORWARDS';
-  orderList[49] = 'MOVE_FORWARDS';
-  orderList[50] = 'TURN_RIGHT';
-  orderList[51] = 'MOVE_FORWARDS';
-  orderList[52] = 'MOVE_FORWARDS';
-  orderList[53] = 'MOVE_FORWARDS';
-  orderList[54] = 'TURN_RIGHT';
-  orderList[55] = 'MOVE_FORWARDS';
-  orderList[56] = 'MOVE_FORWARDS';
-  orderList[57] = 'TURN_RIGHT';
-  orderList[58] = 'MOVE_FORWARDS';
-  orderList[59] = 'MOVE_FORWARDS';
-
-  orderList[60] = 'TURN_LEFT';
-  orderList[61] = 'TURN_LEFT';
-  orderList[62] = 'TURN_LEFT';
-  orderList[63] = 'TURN_LEFT';
 
   // Execute Next Step
   if(objPlayer.isIdle()) {
-    //console.log(numStep);
-    objPlayer.setOrder(orderList[numStep]);
+    objPlayer.setOrder(orderList[numStep], {'canon': 'left', 'power': 1});
     numStep++;
     if(typeof(orderList[numStep]) == 'undefined') {
       numStep = 0;
