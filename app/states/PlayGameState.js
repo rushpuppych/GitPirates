@@ -49,6 +49,9 @@ var PlayGameState = function(game, options) {
       _state.addSpriteSheet('explosion', 'app/assets/images/sprites/explosion.png', 75, 75);
       _state.addSpriteSheet('ships', 'app/assets/images/sprites/ships.png', 76, 123);
 
+      // Load UIX Sprites
+      _state.addSpriteSheet('ships', 'app/assets/images/sprites/ships.png', 76, 123);
+
       // Load Sound Effects
       //_state.addAudio('cannon_fire', 'app/assets/sound/cannon.mp3');
   };
@@ -129,23 +132,8 @@ function runDemo(objPlayer, numStep) {
   // Order List
   var orderList = [];
   var orderParameter = [];
-  /*
+
   orderList[0] = 'SHIP_DAMAGE'; orderParameter[0] = {'dmg': 25};
-  orderList[1] = 'TURN_LEFT';
-  */
-  /*
-  orderList[0] = 'MOVE_FORWARDS';
-  orderList[1] = 'TURN_LEFT';
-  orderList[2] = 'MOVE_FORWARDS';
-  orderList[3] = 'LOAD_CANNON';
-  orderList[4] = 'LOAD_CANNON';
-  orderList[5] = 'LOAD_CANNON';
-  orderList[6] = 'FIRE_CANNON'; orderParameter[6] = {'canon': 'left', 'power': 3};
-  orderList[7] = 'LOAD_CANNON';
-  orderList[8] = 'LOAD_CANNON';
-  orderList[9] = 'LOAD_CANNON';
-  orderList[10] = 'FIRE_CANNON'; orderParameter[10] = {'canon': 'right', 'power': 3};
-  */
 
 
   // Execute Next Step
