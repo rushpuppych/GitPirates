@@ -129,14 +129,6 @@ function runDemo(objPlayer, numStep) {
   // Order List
   var orderList = [];
   var orderParameter = [];
-  orderList[0] = 'MOVE_FORWARDS';
-  orderList[1] = 'MOVE_FORWARDS';
-  orderList[2] = 'MOVE_FORWARDS';
-  orderList[3] = 'MOVE_FORWARDS';
-  orderList[4] = 'MOVE_FORWARDS';
-  orderList[5] = 'TURN_LEFT';
-  orderList[6] = 'TURN_LEFT';
-  orderList[7] = 'MOVE_FORWARDS';
   /*
   orderList[0] = 'SHIP_DAMAGE'; orderParameter[0] = {'dmg': 25};
   orderList[1] = 'TURN_LEFT';

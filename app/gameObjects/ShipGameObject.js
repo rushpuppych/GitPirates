@@ -867,8 +867,9 @@ var ShipGameObject = function(game, state, options) {
    * @return void
    */
   $this.recalcTiledPosition = function() {
-    $this.options.position.tile_x = Math.round($this.options.gameObject.x / 64);
-    $this.options.position.tile_y = Math.round($this.options.gameObject.y / 64)
+    var objShip = $this.options.gameObject;
+    $this.options.position.tile_x = Math.round((objShip.x + (objShip.width / 2) + 32) / 64) - 1;
+    $this.options.position.tile_y = Math.round((objShip.y + (objShip.height / 2) + 32) / 64) - 1;
   };
 
   /**
@@ -882,8 +883,6 @@ var ShipGameObject = function(game, state, options) {
   _private.getCorrectionPosition = function(objCorrectionObject) {
     var numTileWidth = 64;
     var numTileHeight = 64;
-
-    // TODO: das muss vom Mittelpunkt aus berechnet werden
 
     var objCorrection = {
       width: (numTileWidth - objCorrectionObject.width) / 2,
@@ -906,9 +905,7 @@ var ShipGameObject = function(game, state, options) {
 
     // Render Player Name
     $this.options.hud.playerText.x = objShip.x - 1;
-    if($this.options.health > 0) {
-      $this.options.hud.playerText.y = objShip.y - 22;
-    }
+    $this.options.hud.playerText.y = objShip.y - 22;
 
     // Render Action Text
     var numAnimation = $this.options.animation_steps.loadCannon + $this.options.animation_steps.fireCannon;
@@ -948,7 +945,7 @@ var ShipGameObject = function(game, state, options) {
     if($this.options.health <= 0) {
       $this.options.status = 'sinking';
       $this.options.gameObject.alpha -= 0.001;
-      $this.options.hud.playerText.y += 0.09;
+      $this.options.hud.playerText.y += (1 - $this.options.gameObject.alpha) * 90;
       $this.options.hud.playerText.style.opacity = $this.options.gameObject.alpha;
       $this.options.hud.healthBar.bg.style.display = 'none';
       $this.options.hud.healthBar.bar.style.display = 'none';
