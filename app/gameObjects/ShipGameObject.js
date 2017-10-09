@@ -18,6 +18,7 @@ var ShipGameObject = function(game, state, options) {
     current_order: 'none',
     current_order_parameter: {},
     player_name: 'RushPuppy',
+    player_color: 'red',
     health: 100,
     cannon_loads: 0,
     hud: {
@@ -72,7 +73,7 @@ var ShipGameObject = function(game, state, options) {
 
     // Create Ship Object
     var objShip = new Kiwi.GameObjects.Sprite(_state, _state.textures.ships);
-    $this.registerShip('green');
+    $this.registerShip($this.options.player_color);
     objShip.animation.switchTo($this.options.ship_animation.ship_100);
     objShip.rotation = 0;
     _state.addChild(objShip);
@@ -145,6 +146,21 @@ var ShipGameObject = function(game, state, options) {
   this.registerShip = function(strColor, objShip) {
     if(strColor == 'green') {
       $this.options.ship_animation = {ship_100: 6, ship_75: 0, ship_30: 7, ship_0: 15};
+    }
+    if(strColor == 'blue') {
+      $this.options.ship_animation = {ship_100: 13, ship_75: 1, ship_30: 8, ship_0: 16};
+    }
+    if(strColor == 'red') {
+      $this.options.ship_animation = {ship_100: 19, ship_75: 23, ship_30: 5, ship_0: 14};
+    }
+    if(strColor == 'yellow') {
+      $this.options.ship_animation = {ship_100: 20, ship_75: 2, ship_30: 9, ship_0: 17};
+    }
+    if(strColor == 'black') {
+      $this.options.ship_animation = {ship_100: 18, ship_75: 22, ship_30: 4, ship_0: 12};
+    }
+    if(strColor == 'white') {
+      $this.options.ship_animation = {ship_100: 11, ship_75: 21, ship_30: 3, ship_0: 10};
     }
   }
 
