@@ -55,8 +55,8 @@ var App = function(options) {
     // Create Game
     var objOptions = {
     	renderer: Kiwi.RENDERER_WEBGL,
-    	width: 800,
-    	height: 600
+    	width: 640,
+    	height: 640
     }
     var objGame = new Kiwi.Game('CodePirate', 'CodePirate', null, objOptions);
 

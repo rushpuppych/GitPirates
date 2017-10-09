@@ -44,6 +44,8 @@ var PlayGameState = function(game, options) {
       // Load Ships and Object Sprites
       _state.addSpriteSheet('misc', 'app/assets/images/sprites/ships_miscellaneous_sheet.png', 64, 64);
       _state.addSpriteSheet('smoke', 'app/assets/images/sprites/smoke.png', 128, 128);
+      _state.addSpriteSheet('bullet', 'app/assets/images/sprites/bullet.png', 12, 12);
+      _state.addSpriteSheet('explosion', 'app/assets/images/sprites/explosion.png', 75, 75);
       _state.addSpriteSheet('ship_01', 'app/assets/images/sprites/ship_01.png', 70, 118);
 
       // Load Sound Effects
@@ -99,7 +101,6 @@ var PlayGameState = function(game, options) {
    */
   this.addPlayer = function(objPlayer) {
     $this.options.players[objPlayer.getId()] = objPlayer;
-    _state.addChild(objPlayer.getGameOject());
   };
 
   /**
@@ -126,16 +127,22 @@ function runDemo(objPlayer, numStep) {
   // Order List
   var orderList = [];
   var orderParameter = [];
+  orderList[0] = 'SHIP_DAMAGE'; orderParameter[0] = {'dmg': 25};
+  orderList[1] = 'TURN_LEFT';
+
   /*
   orderList[0] = 'MOVE_FORWARDS';
   orderList[1] = 'TURN_LEFT';
   orderList[2] = 'MOVE_FORWARDS';
-  orderList[3] = 'FIRE_CANNON';
+  orderList[3] = 'LOAD_CANNON';
+  orderList[4] = 'LOAD_CANNON';
+  orderList[5] = 'LOAD_CANNON';
+  orderList[6] = 'FIRE_CANNON'; orderParameter[6] = {'canon': 'left', 'power': 3};
+  orderList[7] = 'LOAD_CANNON';
+  orderList[8] = 'LOAD_CANNON';
+  orderList[9] = 'LOAD_CANNON';
+  orderList[10] = 'FIRE_CANNON'; orderParameter[10] = {'canon': 'right', 'power': 3};
   */
-  orderList[0] = 'FIRE_CANNON'; orderParameter[0] = {'canon': 'left', 'power': 1};
-  orderList[1] = 'FIRE_CANNON'; orderParameter[1] = {'canon': 'right', 'power': 1};
-  orderList[2] = 'TURN_RIGHT';
-
 
 
   // Execute Next Step

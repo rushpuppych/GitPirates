@@ -13,7 +13,6 @@ var ShipGameObject = function(game, state, options) {
   // CodePirate System Variables
   this.options = $.extend({
     id: helper.uuid(),
-    gameObject: {},
     status: 'idle',
     direction: 'S',
     current_order: 'none',
@@ -25,8 +24,7 @@ var ShipGameObject = function(game, state, options) {
       playerText: {},
       actionText: {},
       healthBar: {},
-      cannonBar: {},
-      smoke: {}
+      cannonBar: {}
     },
     animation_steps: {
       moveNorth: 0,
@@ -36,30 +34,58 @@ var ShipGameObject = function(game, state, options) {
       turnLeft: 0,
       turnRight: 0,
       loadCannon: 0,
-      fireCannon: 0
+      fireCannon: 0,
+      shipDamage: 0
     },
     position: {
       tile_x: 1,
       tile_y: 1
-    }
+    },
+    gameObject: {},
+    smoke: {},
+    bullet: {},
+    explosion: {}
   }, options);
 
   /**
    * Constructor
    */
-  this.init = function() {
-    // Create Ship Object
-    var objShip = new Kiwi.GameObjects.Sprite(_state, _state.textures.ship_01, 1, 1);
-    objShip.rotation = 0;
-    $this.options.gameObject = objShip;
-    $this.setTiledPositionInTiles(2, 4);
-
+  this.init = function() {;
     // Smoke SpriteSheet
     var objSmoke = new Kiwi.GameObjects.Sprite(_state, 'smoke');
   	objSmoke.animation.add('fire', [0, 1, 2, 3, 4, 5, 6, 7, 8, 9], 0.05);
     objSmoke.visible = false;
   	_state.addChild(objSmoke);
-    $this.options.hud.smoke = objSmoke;
+    $this.options.smoke = objSmoke;
+
+    // Cannon Bullet
+    var objBullet = new Kiwi.GameObjects.Sprite(_state, 'bullet');
+    objBullet.visible = false;
+    _state.addChild(objBullet);
+    $this.options.bullet = objBullet;
+
+    // Create Ship Object
+    var objShip = new Kiwi.GameObjects.Sprite(_state, _state.textures.ship_01, 1, 1);
+    objShip.rotation = 0;
+    _state.addChild(objShip);
+    $this.options.gameObject = objShip;
+    $this.setTiledPositionInTiles(2, 4)
+
+    // Explode SpriteSheet
+    var objExplosion = new Kiwi.GameObjects.Sprite(_state, 'explosion');
+  	objExplosion.animation.add('explode', [2, 1, 0, 0, 1, 2], 0.05, false);
+    objExplosion.visible = false;
+    objExplosion.animation.onStop.add(function() {
+      var objCorrection = _private.getCorrectionPosition($this.options.explosion);
+      var objTiledPosition = $this.getTiledPosition();
+      var numRandX = parseInt(Math.random() * 50) - 25;
+      var numRandY = parseInt(Math.random() * 50) - 25;
+      $this.options.explosion.y = objTiledPosition.tile_y * 64 + objCorrection.height + numRandY;
+      $this.options.explosion.x = objTiledPosition.tile_x * 64 + objCorrection.width + numRandY;
+      $this.options.explosion.animation.play('explode');
+    });
+  	_state.addChild(objExplosion);
+    $this.options.explosion = objExplosion;
 
     // Create Player Name Text
     var objPlayerText = new Kiwi.HUD.Widget.TextField (_game, $this.options.player_name, objShip.x, objShip.y - 22);
@@ -94,6 +120,10 @@ var ShipGameObject = function(game, state, options) {
     var objCannonBar = new Kiwi.HUD.Widget.Bar(_game, $this.options.cannon_loads, 10, objShip.x, objShip.y + 10, 70, 5, '#2ECCFA' );
     _game.huds.defaultHUD.addWidget(objCannonBar);
     $this.options.hud.cannonBar.bar = objCannonBar;
+
+    // Init Values
+    $this.resetAnimationSteps();
+    $this.recalcTiledPosition();
   };
 
   /**
@@ -133,7 +163,12 @@ var ShipGameObject = function(game, state, options) {
 
       case 'FIRE_CANNON':
         $this.options.status = 'fire';
-        _private.fireCannon();
+        _private.cannonFireHandling();
+      break;
+
+      case 'SHIP_DAMAGE':
+        $this.options.status = 'damage';
+        _private.shipDamage();
       break;
 
       case 'ACTION':
@@ -153,7 +188,9 @@ var ShipGameObject = function(game, state, options) {
     }
 
     // Render HUD
-    $this.renderHUD();
+    if($this.options.health > 0) {
+      $this.renderHUD();
+    }
   };
 
   /**
@@ -166,6 +203,12 @@ var ShipGameObject = function(game, state, options) {
    * @return void
    */
   this.setOrder = function(strOrder, objParameter) {
+    // No orders if ship is killed
+    if($this.options.health <= 0) {
+      return;
+    }
+
+    // Set Order if state is ready for new orders
     if($this.options.current_order == 'none' && $this.options.status == 'idle') {
       $this.options.current_order = strOrder;
       if(typeof(objParameter) != 'undefined') {
@@ -408,7 +451,14 @@ var ShipGameObject = function(game, state, options) {
   _private.loadCannon = function() {
     $this.options.animation_steps['loadCannon']++;
 
-    // Loading Cannon
+    // Load Power Points
+    if($this.options.animation_steps['loadCannon'] == 1) {
+      if($this.options.cannon_loads < 10) {
+        $this.options.cannon_loads++;
+      }
+    }
+
+    // Loading Cannon Text
     if($this.options.cannon_loads < 10) {
       $this.options.hud.actionText.text = "Cannon +1";
     } else {
@@ -417,9 +467,51 @@ var ShipGameObject = function(game, state, options) {
 
     // Finnish Conndition
     if($this.checkAnimationSteps('loadCannon', 80, 80)) {
-      if($this.options.cannon_loads < 10) {
-        $this.options.cannon_loads++;
-      }
+      $this.options.status = 'finish';
+      $this.options.hud.actionText.text = "";
+    }
+  };
+
+  /**
+   * cannonFireHandling
+   * @description
+   * This handels the Cannon Shooting and decides if Shoot or Error
+   *
+   * @param void
+   * @return void
+   */
+  _private.cannonFireHandling = function() {
+    var numCannonPower = 0;
+    if($this.options.animation_steps['fireCannon'] == 0) {
+      numCannonPower = $this.options.cannon_loads - $this.options.current_order_parameter.power;
+    } else {
+      numCannonPower = $this.options.cannon_loads;
+    }
+
+    // Error or Shoot
+    if(numCannonPower < 0) {
+      _private.cannonError();
+    } else {
+      _private.cannonFire();
+    }
+  };
+
+  /**
+   * cannonError
+   * @description
+   * Shows the Error Message if the Cannon can not be fired
+   *
+   * @param void
+   * @return void
+   */
+  _private.cannonError = function() {
+    $this.options.animation_steps['fireCannon']++;
+
+    // Show Cannon Error Message
+    $this.options.hud.actionText.text = "No Power";
+
+    // Finnish Conndition
+    if($this.checkAnimationSteps('fireCannon', 80, 80)) {
       $this.options.status = 'finish';
       $this.options.hud.actionText.text = "";
     }
@@ -433,14 +525,19 @@ var ShipGameObject = function(game, state, options) {
    * @param void
    * @return void
    */
-  _private.fireCannon = function() {
+  _private.cannonFire = function() {
     $this.options.animation_steps['fireCannon']++;
+    var objShip = $this.getGameOject();
+
+    // Cannon Power is Maximal 5
+    if($this.options.current_order_parameter.power > 5) {
+      $this.options.current_order_parameter.power == 5;
+    }
 
     // Play GunFire Smoke Sprite
     if($this.options.animation_steps['fireCannon'] == 1) {
-      var objShip = $this.getGameOject();
+      $this.options.cannon_loads -= $this.options.current_order_parameter.power;
       var objSmokeCorrection = _private.fireCannonSmokePosition();
-
 
       var numLeftRight = 0;
       if($this.options.current_order_parameter.canon == 'left') {
@@ -450,22 +547,31 @@ var ShipGameObject = function(game, state, options) {
         numLeftRight = 4.5;
       }
 
-      $this.options.hud.smoke.animation.play('fire');
-      $this.options.hud.smoke.visible = true;
-      $this.options.hud.smoke.rotation = objShip.rotation + numLeftRight;
-      $this.options.hud.smoke.y = objShip.y + objSmokeCorrection.height;
-      $this.options.hud.smoke.x = objShip.x + objSmokeCorrection.width;
+      $this.options.smoke.animation.play('fire');
+      $this.options.smoke.visible = true;
+      $this.options.smoke.rotation = objShip.rotation + numLeftRight;
+      $this.options.smoke.y = objShip.y + objSmokeCorrection.height;
+      $this.options.smoke.x = objShip.x + objSmokeCorrection.width;
     }
     if($this.options.animation_steps['fireCannon'] > 40) {
-      $this.options.hud.smoke.visible = false;
+      $this.options.smoke.visible = false;
     }
 
     // Shoot Cannonball
-    // todo: use Cannonbal Parameters
-    // $this.options.current_order_parameter
+    if($this.options.animation_steps['fireCannon'] == 1) {
+      $this.options.bullet.visible = true;
+
+      var objTiledPosition = $this.getTiledPosition();
+      $this.options.bullet.x = (objTiledPosition.tile_x * 64) + 26;
+      $this.options.bullet.y = (objTiledPosition.tile_y * 64) + 26;
+    } else {
+      _private.fireCannonBullet();
+      _private.scalleCannonBullet();
+    }
 
     // Finnish Conndition
     if($this.checkAnimationSteps('fireCannon', 100, 100)) {
+      $this.options.bullet.visible = false;
       $this.options.status = 'finish';
     }
   };
@@ -508,6 +614,117 @@ var ShipGameObject = function(game, state, options) {
     }
 
     return objCorrection;
+  };
+
+  /**
+   * fireCannonBullet
+   * @description
+   * This is the Bullet Fire animation
+   *
+   * @param void
+   * @return void
+   */
+  _private.fireCannonBullet = function() {
+    var strCode = $this.options.direction + ':' + $this.options.current_order_parameter.canon;
+    var numSpeed = ($this.options.current_order_parameter.power * 64) / 100;
+
+    if(strCode == 'S:left' || strCode == 'N:right') {
+      $this.options.bullet.x += numSpeed;
+    }
+    if(strCode == 'SE:left' || strCode == 'NW:right') {
+      $this.options.bullet.x += numSpeed;
+      $this.options.bullet.y -= numSpeed;
+    }
+    if(strCode == 'E:left' || strCode == 'W:right') {
+      $this.options.bullet.y -= numSpeed;
+    }
+    if(strCode == 'NE:left' || strCode == 'SW:right') {
+      $this.options.bullet.x -= numSpeed;
+      $this.options.bullet.y -= numSpeed;
+    }
+    if(strCode == 'N:left' || strCode == 'S:right') {
+      $this.options.bullet.x -= numSpeed;
+    }
+    if(strCode == 'SW:left' || strCode == 'NE:right') {
+      $this.options.bullet.x += numSpeed;
+      $this.options.bullet.y += numSpeed;
+    }
+    if(strCode == 'W:left' || strCode == 'E:right') {
+      $this.options.bullet.y += numSpeed;
+    }
+    if(strCode == 'NW:left' || strCode == 'SE:right') {
+      $this.options.bullet.x -= numSpeed;
+      $this.options.bullet.y += numSpeed;
+    }
+  };
+
+  /**
+   * scalleCannonBullet
+   * @description
+   * This is the Bullet Scalle
+   *
+   * @param void
+   * @return void
+   */
+  _private.scalleCannonBullet = function() {
+    var numSpeed = ($this.options.current_order_parameter.power * 64) / 100;
+    var numSteps = $this.options.animation_steps['fireCannon'];
+
+    // Scalle Up
+    if($this.checkAnimationSteps('fireCannon', 0, 45)) {
+      $this.options.bullet.scaleToHeight(12 + (numSteps * 0.5));
+      $this.options.bullet.scaleToWidth(12 + (numSteps * 0.5));
+    }
+
+    // Scalle Down
+    if($this.checkAnimationSteps('fireCannon', 55, 100)) {
+      $this.options.bullet.scaleToHeight(12 + (45 * 0.5) - ((numSteps-45) * 0.5));
+      $this.options.bullet.scaleToWidth(12 + (45 * 0.5) - ((numSteps-45) * 0.5));
+    }
+  };
+
+  /**
+   * shipDamage
+   * @description
+   * This Resets the Animation Step counters
+   *
+   * @param void
+   * @return void
+   */
+  _private.shipDamage = function() {
+    $this.options.animation_steps['shipDamage']++;
+    var objCorrection = _private.getCorrectionPosition($this.options.explosion);
+    var objTiledPosition = $this.getTiledPosition();
+
+    // Calculate Damage
+    var numDamageSpeed = $this.options.current_order_parameter.dmg / 100;
+    $this.options.health -= numDamageSpeed;
+
+    // Kill Player if Health = 0
+    if($this.options.health <= 0) {
+      $this.options.hud.playerText.style.opacity = 0.2;
+      $this.options.hud.playerText.y += 10;
+      $this.options.gameObject.alpha = 0.2;
+      $this.options.hud.healthBar.bg.style.display = 'none';
+      $this.options.hud.healthBar.bar.style.display = 'none';
+      $this.options.hud.cannonBar.bg.style.display = 'none';
+      $this.options.hud.cannonBar.bar.style.display = 'none';
+    }
+
+    // Load Power Points
+    if($this.options.animation_steps['shipDamage'] == 1) {
+        // Explosion Animation
+        $this.options.explosion.y = objTiledPosition.tile_y * 64;
+        $this.options.explosion.x = objTiledPosition.tile_x * 64;
+        $this.options.explosion.animation.play('explode');
+        $this.options.explosion.visible = true;
+    }
+
+    // Finnish Conndition
+    if($this.checkAnimationSteps('shipDamage', 100, 100)) {
+      $this.options.status = 'finish';
+      $this.options.explosion.visible = false;
+    }
   };
 
   /**
@@ -622,7 +839,7 @@ var ShipGameObject = function(game, state, options) {
     $this.options.hud.playerText.y = objShip.y - 22;
 
     // Render Action Text
-    var numAnimation = $this.options.animation_steps.loadCannon;
+    var numAnimation = $this.options.animation_steps.loadCannon + $this.options.animation_steps.fireCannon;
     $this.options.hud.actionText.x = objShip.x;
     $this.options.hud.actionText.y = objShip.y + 60 - numAnimation;
     $this.options.hud.actionText.style.opacity = 1 - numAnimation / 100;
@@ -632,7 +849,7 @@ var ShipGameObject = function(game, state, options) {
     $this.options.hud.healthBar.bg.y = objShip.y - 1
     $this.options.hud.healthBar.bar.x = objShip.x;
     $this.options.hud.healthBar.bar.y = objShip.y
-    $this.options.hud.healthBar.bar.counter.current = $this.options.healt;
+    $this.options.hud.healthBar.bar.counter.current = $this.options.health;
 
     // Render CannonBar
     $this.options.hud.cannonBar.bg.x = objShip.x - 1;
