@@ -46,7 +46,7 @@ var PlayGameState = function(game, options) {
       _state.addSpriteSheet('smoke', 'app/assets/images/sprites/smoke.png', 128, 128);
       _state.addSpriteSheet('bullet', 'app/assets/images/sprites/bullet.png', 12, 12);
       _state.addSpriteSheet('explosion', 'app/assets/images/sprites/explosion.png', 75, 75);
-      _state.addSpriteSheet('ship_01', 'app/assets/images/sprites/ship_01.png', 70, 118);
+      _state.addSpriteSheet('ships', 'app/assets/images/sprites/ships.png', 76, 123);
 
       // Load Sound Effects
       //_state.addAudio('cannon_fire', 'app/assets/sound/cannon.mp3');

@@ -26,6 +26,12 @@ var ShipGameObject = function(game, state, options) {
       healthBar: {},
       cannonBar: {}
     },
+    ship_animation: {
+      ship_100: 0,
+      ship_75: 0,
+      ship_30: 0,
+      ship_0: 0
+    },
     animation_steps: {
       moveNorth: 0,
       moveEast: 0,
@@ -65,7 +71,9 @@ var ShipGameObject = function(game, state, options) {
     $this.options.bullet = objBullet;
 
     // Create Ship Object
-    var objShip = new Kiwi.GameObjects.Sprite(_state, _state.textures.ship_01, 1, 1);
+    var objShip = new Kiwi.GameObjects.Sprite(_state, _state.textures.ships);
+    $this.registerShip('green');
+    objShip.animation.switchTo($this.options.ship_animation.ship_100);
     objShip.rotation = 0;
     _state.addChild(objShip);
     $this.options.gameObject = objShip;
@@ -125,6 +133,20 @@ var ShipGameObject = function(game, state, options) {
     $this.resetAnimationSteps();
     $this.recalcTiledPosition();
   };
+
+  /**
+   * registerShip
+   * @description
+   * This is the Animation Step Register for all the Available Ships
+   *
+   * @param strColor    Ship Color
+   * @return void
+   */
+  this.registerShip = function(strColor, objShip) {
+    if(strColor == 'green') {
+      $this.options.ship_animation = {ship_100: 6, ship_75: 0, ship_30: 7, ship_0: 15};
+    }
+  }
 
   /**
    * executeOrderOnUpdate
@@ -188,7 +210,7 @@ var ShipGameObject = function(game, state, options) {
     }
 
     // Render HUD
-    if($this.options.health > 0) {
+    if($this.options.status != 'killed') {
       $this.renderHUD();
     }
   };
@@ -203,8 +225,8 @@ var ShipGameObject = function(game, state, options) {
    * @return void
    */
   this.setOrder = function(strOrder, objParameter) {
-    // No orders if ship is killed
-    if($this.options.health <= 0) {
+    // No orders if ship is killed or sinking
+    if($this.options.status == 'killed' || $this.options.status == 'sinking') {
       return;
     }
 
@@ -700,15 +722,18 @@ var ShipGameObject = function(game, state, options) {
     var numDamageSpeed = $this.options.current_order_parameter.dmg / 100;
     $this.options.health -= numDamageSpeed;
 
-    // Kill Player if Health = 0
+    // Show Ship Damage and kill Player if Health = 0
+    if($this.options.health > 75) {
+      $this.options.gameObject.animation.switchTo($this.options.ship_animation.ship_100);
+    }
+    if($this.options.health <= 75) {
+      $this.options.gameObject.animation.switchTo($this.options.ship_animation.ship_75);
+    }
+    if($this.options.health <= 30) {
+      $this.options.gameObject.animation.switchTo($this.options.ship_animation.ship_30);
+    }
     if($this.options.health <= 0) {
-      $this.options.hud.playerText.style.opacity = 0.2;
-      $this.options.hud.playerText.y += 10;
-      $this.options.gameObject.alpha = 0.2;
-      $this.options.hud.healthBar.bg.style.display = 'none';
-      $this.options.hud.healthBar.bar.style.display = 'none';
-      $this.options.hud.cannonBar.bg.style.display = 'none';
-      $this.options.hud.cannonBar.bar.style.display = 'none';
+      $this.options.gameObject.animation.switchTo($this.options.ship_animation.ship_0);
     }
 
     // Load Power Points
@@ -835,8 +860,10 @@ var ShipGameObject = function(game, state, options) {
     var objShip = $this.getGameOject();
 
     // Render Player Name
-    $this.options.hud.playerText.x = objShip.x - 1;
-    $this.options.hud.playerText.y = objShip.y - 22;
+    if($this.options.health > 0) {
+      $this.options.hud.playerText.x = objShip.x - 1;
+      $this.options.hud.playerText.y = objShip.y - 22;
+    }
 
     // Render Action Text
     var numAnimation = $this.options.animation_steps.loadCannon + $this.options.animation_steps.fireCannon;
@@ -857,6 +884,28 @@ var ShipGameObject = function(game, state, options) {
     $this.options.hud.cannonBar.bar.x = objShip.x;
     $this.options.hud.cannonBar.bar.y = objShip.y + 10;
     $this.options.hud.cannonBar.bar.counter.current = $this.options.cannon_loads;
+
+    // Render Sinking Ship
+    if($this.options.health <= 0) {
+      $this.options.status = 'sinking';
+      $this.options.gameObject.alpha -= 0.001;
+      $this.options.hud.playerText.y += 0.09;
+      $this.options.hud.playerText.style.opacity = $this.options.gameObject.alpha;
+      $this.options.hud.healthBar.bg.style.display = 'none';
+      $this.options.hud.healthBar.bar.style.display = 'none';
+      $this.options.hud.cannonBar.bg.style.display = 'none';
+      $this.options.hud.cannonBar.bar.style.display = 'none';
+
+      if($this.options.gameObject.alpha >= 0.5) {
+        $this.options.gameObject.scaleToWidth($this.options.gameObject.alpha * $this.options.gameObject.width);
+        $this.options.gameObject.scaleToHeight($this.options.gameObject.alpha * $this.options.gameObject.height);
+      }
+    }
+
+    // Render Killed Ship
+    if($this.options.gameObject.alpha <= 0.2) {
+      $this.options.status = 'killed';
+    }
   };
 
   /**
