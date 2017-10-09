@@ -25,7 +25,8 @@ var ShipGameObject = function(game, state, options) {
       playerText: {},
       actionText: {},
       healthBar: {},
-      cannonBar: {}
+      cannonBar: {},
+      smoke: {}
     },
     animation_steps: {
       moveNorth: 0,
@@ -261,9 +262,10 @@ var ShipGameObject = function(game, state, options) {
    */
   _private.moveSouth = function () {
     var objGameObject = $this.options.gameObject;
+    var objCorrection = _private.getCorrectionPosition($this.options.gameObject);
     objGameObject.y++;
     $this.options.animation_steps['moveSouth']++;
-    if((objGameObject.y / 64) % 1 == 0 && $this.checkAnimationSteps('moveSouth', 64, 64)) {
+    if(((objGameObject.y - objCorrection.height) / 64) % 1 == 0 && $this.checkAnimationSteps('moveSouth', 64, 64)) {
       $this.options.status = 'finish';
     }
   };
@@ -278,10 +280,11 @@ var ShipGameObject = function(game, state, options) {
    */
   _private.moveNorth = function () {
     var objGameObject = $this.options.gameObject;
+    var objCorrection = _private.getCorrectionPosition($this.options.gameObject);
     objGameObject.y--;
     $this.options.animation_steps['moveNorth']++;
 
-    if((objGameObject.y / 64) % 1 == 0 && $this.checkAnimationSteps('moveNorth', 64, 64)) {
+    if(((objGameObject.y - objCorrection.height) / 64) % 1 == 0 && $this.checkAnimationSteps('moveNorth', 64, 64)) {
       $this.options.status = 'finish';
     }
   };
@@ -296,10 +299,11 @@ var ShipGameObject = function(game, state, options) {
    */
   _private.moveEast = function () {
     var objGameObject = $this.options.gameObject;
+    var objCorrection = _private.getCorrectionPosition($this.options.gameObject);
     objGameObject.x++;
     $this.options.animation_steps['moveEast']++;
 
-    if((objGameObject.x / 64) % 1 == 0 && $this.checkAnimationSteps('moveEast', 64, 64)) {
+    if(((objGameObject.x - objCorrection.width) / 64) % 1 == 0 && $this.checkAnimationSteps('moveEast', 64, 64)) {
       $this.options.status = 'finish';
     }
   };
@@ -314,10 +318,11 @@ var ShipGameObject = function(game, state, options) {
    */
   _private.moveWest = function () {
     var objGameObject = $this.options.gameObject;
+    var objCorrection = _private.getCorrectionPosition($this.options.gameObject);
     objGameObject.x--;
     $this.options.animation_steps['moveWest']++;
 
-    if((objGameObject.x / 64) % 1 == 0 && $this.checkAnimationSteps('moveWest', 64, 64)) {
+    if(((objGameObject.x - objCorrection.width) / 64) % 1 == 0 && $this.checkAnimationSteps('moveWest', 64, 64)) {
       $this.options.status = 'finish';
     }
   };
@@ -434,12 +439,22 @@ var ShipGameObject = function(game, state, options) {
     // Play GunFire Smoke Sprite
     if($this.options.animation_steps['fireCannon'] == 1) {
       var objShip = $this.getGameOject();
+      var objSmokeCorrection = _private.fireCannonSmokePosition();
+
+
+      var numLeftRight = 0;
+      if($this.options.current_order_parameter.canon == 'left') {
+        numLeftRight = 1.5;
+      }
+      if($this.options.current_order_parameter.canon == 'right') {
+        numLeftRight = 4.5;
+      }
+
       $this.options.hud.smoke.animation.play('fire');
       $this.options.hud.smoke.visible = true;
-      $this.options.hud.smoke.rotation = 1.5 + objShip.rotation;
-      // todo: function for cannonball Position by direction
-      $this.options.hud.smoke.y = objShip.y; // + cannonball position
-      $this.options.hud.smoke.x = objShip.x; // + cannonball position
+      $this.options.hud.smoke.rotation = objShip.rotation + numLeftRight;
+      $this.options.hud.smoke.y = objShip.y + objSmokeCorrection.height;
+      $this.options.hud.smoke.x = objShip.x + objSmokeCorrection.width;
     }
     if($this.options.animation_steps['fireCannon'] > 40) {
       $this.options.hud.smoke.visible = false;
@@ -453,6 +468,46 @@ var ShipGameObject = function(game, state, options) {
     if($this.checkAnimationSteps('fireCannon', 100, 100)) {
       $this.options.status = 'finish';
     }
+  };
+
+  /**
+   * fireCannonSmokePosition
+   * @description
+   * This is the Correction Position for the CannonSmoke Sprite
+   *
+   * @param void
+   * @return objCorrection  This is the Correction Position Height and Width
+   */
+  _private.fireCannonSmokePosition = function() {
+    var objCorrection = {};
+    var strCode = $this.options.direction + ':' + $this.options.current_order_parameter.canon;
+
+    if(strCode == 'S:left' || strCode == 'N:right') {
+      objCorrection = {'width': 40, 'height': -10};
+    }
+    if(strCode == 'SE:left' || strCode == 'NW:right') {
+      objCorrection = {'width': 25, 'height': -60};
+    }
+    if(strCode == 'E:left' || strCode == 'W:right') {
+      objCorrection = {'width': -30, 'height': -75};
+    }
+    if(strCode == 'NE:left' || strCode == 'SW:right') {
+      objCorrection = {'width': -90, 'height': -60};
+    }
+    if(strCode == 'N:left' || strCode == 'S:right') {
+      objCorrection = {'width': -120, 'height': -10};
+    }
+    if(strCode == 'SW:left' || strCode == 'NE:right') {
+      objCorrection = {'width': 35, 'height': 55};
+    }
+    if(strCode == 'W:left' || strCode == 'E:right') {
+      objCorrection = {'width': -25, 'height': 75};
+    }
+    if(strCode == 'NW:left' || strCode == 'SE:right') {
+      objCorrection = {'width': -90, 'height': 60};
+    }
+
+    return objCorrection;
   };
 
   /**
@@ -509,10 +564,12 @@ var ShipGameObject = function(game, state, options) {
    * @return void
    */
   $this.setTiledPositionInTiles = function(numX, numY) {
+    var objShip = $this.options.gameObject;
+    var objCorrection = _private.getCorrectionPosition($this.options.gameObject);
     $this.options.position.tile_x = numX;
     $this.options.position.tile_y = numY;
-    $this.options.gameObject.x = (numX - 1) * 64;
-    $this.options.gameObject.y = (numY - 1) * 64;
+    $this.options.gameObject.x = (numX - 1) * 64 + objCorrection.width;
+    $this.options.gameObject.y = (numY - 1) * 64 + objCorrection.height;
   };
 
   /**
@@ -529,6 +586,25 @@ var ShipGameObject = function(game, state, options) {
     $this.options.position.tile_y = Math.round($this.options.gameObject.y / 64)
   };
 
+  /**
+   * getCorrectionPosition
+   * @description
+   * This is the Correction Code for Sprites on the Tilemap
+   *
+   * @param objCorrectionObject   The Object wich has to be Corrected
+   * @return objCorrection        This is the Correction Coordinates for Height and Width
+   */
+  _private.getCorrectionPosition = function(objCorrectionObject) {
+    var numTileWidth = 64;
+    var numTileHeight = 64;
+
+    var objCorrection = {
+      width: (numTileWidth - objCorrectionObject.width) / 2,
+      height: (numTileHeight - objCorrectionObject.height) / 2
+    }
+
+    return objCorrection;
+  };
 
   /**
    * renderHUD

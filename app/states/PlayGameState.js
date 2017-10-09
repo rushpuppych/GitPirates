@@ -125,14 +125,27 @@ var PlayGameState = function(game, options) {
 function runDemo(objPlayer, numStep) {
   // Order List
   var orderList = [];
+  var orderParameter = [];
+  /*
   orderList[0] = 'MOVE_FORWARDS';
   orderList[1] = 'TURN_LEFT';
   orderList[2] = 'MOVE_FORWARDS';
   orderList[3] = 'FIRE_CANNON';
+  */
+  orderList[0] = 'FIRE_CANNON'; orderParameter[0] = {'canon': 'left', 'power': 1};
+  orderList[1] = 'FIRE_CANNON'; orderParameter[1] = {'canon': 'right', 'power': 1};
+  orderList[2] = 'TURN_RIGHT';
+
+
 
   // Execute Next Step
   if(objPlayer.isIdle()) {
-    objPlayer.setOrder(orderList[numStep], {'canon': 'left', 'power': 1});
+    var objParamerer = {}
+    if(typeof(orderParameter[numStep]) != 'undefined') {
+      objParamerer = orderParameter[numStep];
+    }
+
+    objPlayer.setOrder(orderList[numStep], objParamerer);
     numStep++;
     if(typeof(orderList[numStep]) == 'undefined') {
       numStep = 0;
