@@ -12,6 +12,7 @@ var PlayGameState = function(game, options) {
   // CodePirate System Variables
   this.options = $.extend({
     map: 'test',
+    tilemap: {},
     players: []
   }, options);
 
@@ -20,7 +21,7 @@ var PlayGameState = function(game, options) {
    */
   this.init = function() {
     setTimeout(function() {
-      var objPlayer = new ShipGameObject(_game, _state);
+      var objPlayer = new ShipGameObject(_game, _state, {tilemap: $this.options.tilemap});
       $this.addPlayer(objPlayer);
       runDemo(objPlayer, 0);
     }, 1000);
@@ -70,6 +71,7 @@ var PlayGameState = function(game, options) {
     _state.addChild(objTileMap.layers[2]); // Islands
     _state.addChild(objTileMap.layers[3]); // Fortification
     _state.addChild(objTileMap.layers[4]); // Objects
+    $this.options.tilemap = objTileMap;
   };
 
   /**
@@ -127,9 +129,18 @@ function runDemo(objPlayer, numStep) {
   // Order List
   var orderList = [];
   var orderParameter = [];
+  orderList[0] = 'MOVE_FORWARDS';
+  orderList[1] = 'MOVE_FORWARDS';
+  orderList[2] = 'MOVE_FORWARDS';
+  orderList[3] = 'MOVE_FORWARDS';
+  orderList[4] = 'MOVE_FORWARDS';
+  orderList[5] = 'TURN_LEFT';
+  orderList[6] = 'TURN_LEFT';
+  orderList[7] = 'MOVE_FORWARDS';
+  /*
   orderList[0] = 'SHIP_DAMAGE'; orderParameter[0] = {'dmg': 25};
   orderList[1] = 'TURN_LEFT';
-
+  */
   /*
   orderList[0] = 'MOVE_FORWARDS';
   orderList[1] = 'TURN_LEFT';

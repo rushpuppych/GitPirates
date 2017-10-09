@@ -14,6 +14,7 @@ var ShipGameObject = function(game, state, options) {
   this.options = $.extend({
     id: helper.uuid(),
     status: 'idle',
+    kickback: false,
     direction: 'S',
     current_order: 'none',
     current_order_parameter: {},
@@ -51,7 +52,8 @@ var ShipGameObject = function(game, state, options) {
     gameObject: {},
     smoke: {},
     bullet: {},
-    explosion: {}
+    explosion: {},
+    tilemap: {}
   }, options);
 
   /**
@@ -177,11 +179,13 @@ var ShipGameObject = function(game, state, options) {
       case 'MOVE_FORWARDS':
         $this.options.status = 'move';
         _private.moveForwards();
+        _private.checkKickBack();
       break;
 
       case 'MOVE_BACKWARDS':
         $this.options.status = 'move';
         _private.moveBackwards();
+        _private.checkKickBack();
       break;
 
       case 'TURN_LEFT':
@@ -221,6 +225,7 @@ var ShipGameObject = function(game, state, options) {
       $this.options.current_order = 'none';
       $this.options.current_order_parameter = {};
       $this.options.status = 'idle';
+      $this.options.kickback = false;
       $this.resetAnimationSteps();
       $this.recalcTiledPosition();
     }
@@ -344,9 +349,13 @@ var ShipGameObject = function(game, state, options) {
   _private.moveSouth = function () {
     var objGameObject = $this.options.gameObject;
     var objCorrection = _private.getCorrectionPosition($this.options.gameObject);
-    objGameObject.y++;
+    if(!$this.options.kickback) {
+      objGameObject.y++;
+    } else {
+      objGameObject.y--;
+    }
     $this.options.animation_steps['moveSouth']++;
-    if(((objGameObject.y - objCorrection.height) / 64) % 1 == 0 && $this.checkAnimationSteps('moveSouth', 64, 64)) {
+    if(((objGameObject.y - objCorrection.height) / 64) % 1 == 0 && $this.checkAnimationSteps('moveSouth', 50, 80)) {
       $this.options.status = 'finish';
     }
   };
@@ -362,10 +371,14 @@ var ShipGameObject = function(game, state, options) {
   _private.moveNorth = function () {
     var objGameObject = $this.options.gameObject;
     var objCorrection = _private.getCorrectionPosition($this.options.gameObject);
-    objGameObject.y--;
+    if(!$this.options.kickback) {
+      objGameObject.y--;
+    } else {
+      objGameObject.y++;
+    }
     $this.options.animation_steps['moveNorth']++;
 
-    if(((objGameObject.y - objCorrection.height) / 64) % 1 == 0 && $this.checkAnimationSteps('moveNorth', 64, 64)) {
+    if(((objGameObject.y - objCorrection.height) / 64) % 1 == 0 && $this.checkAnimationSteps('moveNorth', 50, 80)) {
       $this.options.status = 'finish';
     }
   };
@@ -381,10 +394,14 @@ var ShipGameObject = function(game, state, options) {
   _private.moveEast = function () {
     var objGameObject = $this.options.gameObject;
     var objCorrection = _private.getCorrectionPosition($this.options.gameObject);
-    objGameObject.x++;
+    if(!$this.options.kickback) {
+      objGameObject.x++;
+    } else {
+      objGameObject.x--;
+    }
     $this.options.animation_steps['moveEast']++;
 
-    if(((objGameObject.x - objCorrection.width) / 64) % 1 == 0 && $this.checkAnimationSteps('moveEast', 64, 64)) {
+    if(((objGameObject.x - objCorrection.width) / 64) % 1 == 0 && $this.checkAnimationSteps('moveEast', 50, 80)) {
       $this.options.status = 'finish';
     }
   };
@@ -400,13 +417,37 @@ var ShipGameObject = function(game, state, options) {
   _private.moveWest = function () {
     var objGameObject = $this.options.gameObject;
     var objCorrection = _private.getCorrectionPosition($this.options.gameObject);
-    objGameObject.x--;
+    if(!$this.options.kickback) {
+      objGameObject.x--;
+    } else {
+      objGameObject.x++;
+    }
     $this.options.animation_steps['moveWest']++;
 
-    if(((objGameObject.x - objCorrection.width) / 64) % 1 == 0 && $this.checkAnimationSteps('moveWest', 64, 64)) {
+    if(((objGameObject.x - objCorrection.width) / 64) % 1 == 0 && $this.checkAnimationSteps('moveWest', 50, 80)) {
       $this.options.status = 'finish';
     }
   };
+
+  /**
+   * checkKickBack
+   * @description
+   * This is checking if the Players Ship is crashing agains a Island
+   *
+   * @param void
+   * @return void
+   */
+  _private.checkKickBack = function() {
+    $this.recalcTiledPosition();
+    var objTiledPosition = $this.getTiledPosition();
+    var objTileMapLayer = $this.options.tilemap.getLayer(1);
+    var objTileType = objTileMapLayer.getTileFromXY(objTiledPosition.tile_x, objTiledPosition.tile_y);
+    // Check Colision with LightWater
+    if(objTileType.index > 0) {
+      $this.options.kickback = true;
+      $this.options.health -= 25;
+    }
+  }
 
   /**
    * turnLeft
@@ -738,20 +779,6 @@ var ShipGameObject = function(game, state, options) {
     var numDamageSpeed = $this.options.current_order_parameter.dmg / 100;
     $this.options.health -= numDamageSpeed;
 
-    // Show Ship Damage and kill Player if Health = 0
-    if($this.options.health > 75) {
-      $this.options.gameObject.animation.switchTo($this.options.ship_animation.ship_100);
-    }
-    if($this.options.health <= 75) {
-      $this.options.gameObject.animation.switchTo($this.options.ship_animation.ship_75);
-    }
-    if($this.options.health <= 30) {
-      $this.options.gameObject.animation.switchTo($this.options.ship_animation.ship_30);
-    }
-    if($this.options.health <= 0) {
-      $this.options.gameObject.animation.switchTo($this.options.ship_animation.ship_0);
-    }
-
     // Load Power Points
     if($this.options.animation_steps['shipDamage'] == 1) {
         // Explosion Animation
@@ -856,6 +883,8 @@ var ShipGameObject = function(game, state, options) {
     var numTileWidth = 64;
     var numTileHeight = 64;
 
+    // TODO: das muss vom Mittelpunkt aus berechnet werden
+
     var objCorrection = {
       width: (numTileWidth - objCorrectionObject.width) / 2,
       height: (numTileHeight - objCorrectionObject.height) / 2
@@ -876,8 +905,8 @@ var ShipGameObject = function(game, state, options) {
     var objShip = $this.getGameOject();
 
     // Render Player Name
+    $this.options.hud.playerText.x = objShip.x - 1;
     if($this.options.health > 0) {
-      $this.options.hud.playerText.x = objShip.x - 1;
       $this.options.hud.playerText.y = objShip.y - 22;
     }
 
@@ -900,6 +929,20 @@ var ShipGameObject = function(game, state, options) {
     $this.options.hud.cannonBar.bar.x = objShip.x;
     $this.options.hud.cannonBar.bar.y = objShip.y + 10;
     $this.options.hud.cannonBar.bar.counter.current = $this.options.cannon_loads;
+
+    // Rendering Ship Damage
+    if($this.options.health > 75) {
+      $this.options.gameObject.animation.switchTo($this.options.ship_animation.ship_100);
+    }
+    if($this.options.health <= 75) {
+      $this.options.gameObject.animation.switchTo($this.options.ship_animation.ship_75);
+    }
+    if($this.options.health <= 30) {
+      $this.options.gameObject.animation.switchTo($this.options.ship_animation.ship_30);
+    }
+    if($this.options.health <= 0) {
+      $this.options.gameObject.animation.switchTo($this.options.ship_animation.ship_0);
+    }
 
     // Render Sinking Ship
     if($this.options.health <= 0) {
