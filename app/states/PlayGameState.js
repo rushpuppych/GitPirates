@@ -24,7 +24,7 @@ var PlayGameState = function(game, options) {
       var objPlayer = new ShipGameObject(_game, _state, {tilemap: $this.options.tilemap});
       $this.addPlayer(objPlayer);
       runDemo(objPlayer, 0);
-    }, 1000);
+    }, 5000);
   };
 
   /**
@@ -53,7 +53,11 @@ var PlayGameState = function(game, options) {
       _state.addSpriteSheet('ships', 'app/assets/images/sprites/ships.png', 76, 123);
 
       // Load Sound Effects
-      //_state.addAudio('cannon_fire', 'app/assets/sound/cannon.mp3');
+      _state.addAudio('cannon_fire', 'app/assets/sfx/cannon.mp3');
+      _state.addAudio('ship_damage', 'app/assets/sfx/explosion.mp3');
+
+      // Load Music
+      _state.addAudio('battle_theme', 'app/assets/music/battle.mp3');
   };
 
   /**
@@ -75,6 +79,10 @@ var PlayGameState = function(game, options) {
     _state.addChild(objTileMap.layers[3]); // Fortification
     _state.addChild(objTileMap.layers[4]); // Objects
     $this.options.tilemap = objTileMap;
+
+    // Create Background music
+    var objBattleThemeMusic = new Kiwi.Sound.Audio(_game, 'battle_theme', 0.3, true);
+    objBattleThemeMusic.play();
   };
 
   /**
@@ -132,9 +140,16 @@ function runDemo(objPlayer, numStep) {
   // Order List
   var orderList = [];
   var orderParameter = [];
-
-  orderList[0] = 'SHIP_DAMAGE'; orderParameter[0] = {'dmg': 25};
-
+  orderList[0] = 'MOVE_FORWARDS';
+  orderList[1] = 'LOAD_CANNON';
+  orderList[2] = 'LOAD_CANNON';
+  orderList[3] = 'LOAD_CANNON';
+  orderList[4] = 'LOAD_CANNON';
+  orderList[5] = 'LOAD_CANNON';
+  orderList[6] = 'FIRE_CANNON'; orderParameter[6] = {'cannon': 'left', 'power': 5};
+  orderList[7] = 'SHIP_DAMAGE'; orderParameter[7] = {'dmg': 25};
+  orderList[8] = 'SHIP_DAMAGE'; orderParameter[8] = {'dmg': 25};
+  orderList[9] = 'SHIP_DAMAGE'; orderParameter[9] = {'dmg': 25};
 
   // Execute Next Step
   if(objPlayer.isIdle()) {

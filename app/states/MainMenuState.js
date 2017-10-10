@@ -31,6 +31,7 @@ var MainMenuState = function(game, options) {
    * @return void
    */
   _state.preload = function () {
+    // Load All Images
     _state.addImage('logo_big', 'app/assets/images/gui/logo_big.png', true, 631, 155);
     _state.addImage('bg_01', 'app/assets/images/gui/background_01.png', true, 1024, 640, 0, 0);
     _state.addImage('banner_menu', 'app/assets/images/gui/banner_menu.png', true, 800, 346);
@@ -38,6 +39,9 @@ var MainMenuState = function(game, options) {
     _state.addImage('btn_02', 'app/assets/images/gui/btn_02.png', true, 302, 52);
     _state.addImage('btn_03', 'app/assets/images/gui/btn_03.png', true, 302, 52);
     _state.addImage('btn_04', 'app/assets/images/gui/btn_04.png', true, 302, 52);
+
+    // Load Music
+    _state.addAudio('main_theme', 'app/assets/music/main.mp3');
   };
 
   /**
@@ -90,6 +94,10 @@ var MainMenuState = function(game, options) {
     objQuitBtn.x = 360;
     objQuitBtn.y = 430;
     _state.addChild(objQuitBtn);
+
+    // Create Background music
+    var objMainThemeMusic = new Kiwi.Sound.Audio(_game, 'main_theme', 0.3, true);
+    objMainThemeMusic.play();
   };
 
   /**

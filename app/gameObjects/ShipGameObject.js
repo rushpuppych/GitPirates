@@ -49,6 +49,10 @@ var ShipGameObject = function(game, state, options) {
       tile_x: 1,
       tile_y: 1
     },
+    sfx: {
+      cannon_fire: {},
+      ship_damage: {}
+    },
     gameObject: {},
     smoke: {},
     bullet: {},
@@ -59,7 +63,7 @@ var ShipGameObject = function(game, state, options) {
   /**
    * Constructor
    */
-  this.init = function() {;
+  this.init = function() {
     // Smoke SpriteSheet
     var objSmoke = new Kiwi.GameObjects.Sprite(_state, 'smoke');
   	objSmoke.animation.add('fire', [0, 1, 2, 3, 4, 5, 6, 7, 8, 9], 0.05);
@@ -131,6 +135,14 @@ var ShipGameObject = function(game, state, options) {
     var objCannonBar = new Kiwi.HUD.Widget.Bar(_game, $this.options.cannon_loads, 10, objShip.x, objShip.y + 10, 70, 5, '#2ECCFA' );
     _game.huds.defaultHUD.addWidget(objCannonBar);
     $this.options.hud.cannonBar.bar = objCannonBar;
+
+    // Create Cannon Fire sfx
+    var objCannonFireSfx = new Kiwi.Sound.Audio(_game, 'cannon_fire', 0.5, false);
+    $this.options.sfx.cannon_fire = objCannonFireSfx;
+
+    // Create Ship Damage sfx
+    var objShipDamageSfx = new Kiwi.Sound.Audio(_game, 'ship_damage', 0.5, false);
+    $this.options.sfx.ship_damage = objShipDamageSfx;
 
     // Init Values
     $this.resetAnimationSteps();
@@ -617,12 +629,13 @@ var ShipGameObject = function(game, state, options) {
     if($this.options.animation_steps['fireCannon'] == 1) {
       $this.options.cannon_loads -= $this.options.current_order_parameter.power;
       var objSmokeCorrection = _private.fireCannonSmokePosition();
+      $this.options.sfx.cannon_fire.play();
 
       var numLeftRight = 0;
-      if($this.options.current_order_parameter.canon == 'left') {
+      if($this.options.current_order_parameter.cannon == 'left') {
         numLeftRight = 1.5;
       }
-      if($this.options.current_order_parameter.canon == 'right') {
+      if($this.options.current_order_parameter.cannon == 'right') {
         numLeftRight = 4.5;
       }
 
@@ -665,7 +678,7 @@ var ShipGameObject = function(game, state, options) {
    */
   _private.fireCannonSmokePosition = function() {
     var objCorrection = {};
-    var strCode = $this.options.direction + ':' + $this.options.current_order_parameter.canon;
+    var strCode = $this.options.direction + ':' + $this.options.current_order_parameter.cannon;
 
     if(strCode == 'S:left' || strCode == 'N:right') {
       objCorrection = {'width': 40, 'height': -10};
@@ -704,7 +717,7 @@ var ShipGameObject = function(game, state, options) {
    * @return void
    */
   _private.fireCannonBullet = function() {
-    var strCode = $this.options.direction + ':' + $this.options.current_order_parameter.canon;
+    var strCode = $this.options.direction + ':' + $this.options.current_order_parameter.cannon;
     var numSpeed = ($this.options.current_order_parameter.power * 64) / 100;
 
     if(strCode == 'S:left' || strCode == 'N:right') {
@@ -786,6 +799,7 @@ var ShipGameObject = function(game, state, options) {
         $this.options.explosion.x = objTiledPosition.tile_x * 64;
         $this.options.explosion.animation.play('explode');
         $this.options.explosion.visible = true;
+        $this.options.sfx.ship_damage.play();
     }
 
     // Finnish Conndition

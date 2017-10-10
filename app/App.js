@@ -21,8 +21,8 @@ var App = function(options) {
     _private.createGame();
 
     // Register States
-    _private.registerState('PlayGameState', new PlayGameState($this.options.game));
     _private.registerState('MainMenuState', new MainMenuState($this.options.game));
+    _private.registerState('PlayGameState', new PlayGameState($this.options.game));
 
     // Run Game
     _private.createStates();
