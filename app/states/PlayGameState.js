@@ -75,7 +75,6 @@ var PlayGameState = function(game, options) {
     $('#Border').css('background-image', 'url("app/assets/images/gui/border_ingame.png")');
     $this.createTerminal();
 
-
     // Create TileMap
     var objTileMap = new Kiwi.GameObjects.Tilemap.TileMap(_state, 'tilemap', _state.textures.tiles);
     _state.addChild(objTileMap.layers[0]); // Water
