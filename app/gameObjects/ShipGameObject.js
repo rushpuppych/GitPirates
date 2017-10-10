@@ -51,13 +51,16 @@ var ShipGameObject = function(game, state, options) {
     },
     sfx: {
       cannon_fire: {},
-      ship_damage: {}
+      ship_damage: {},
+      ship_move: {},
+      ship_kill: {}
     },
     gameObject: {},
     smoke: {},
     bullet: {},
     explosion: {},
-    tilemap: {}
+    tilemap: {},
+    camera_focus: false,
   }, options);
 
   /**
@@ -143,6 +146,14 @@ var ShipGameObject = function(game, state, options) {
     // Create Ship Damage sfx
     var objShipDamageSfx = new Kiwi.Sound.Audio(_game, 'ship_damage', 0.5, false);
     $this.options.sfx.ship_damage = objShipDamageSfx;
+
+    // Create Ship Move sfx
+    var objShipMoveSfx = new Kiwi.Sound.Audio(_game, 'ship_move', 0.3, false);
+    $this.options.sfx.ship_move = objShipMoveSfx;
+
+    // Create Ship Killing
+    var objShipKill = new Kiwi.Sound.Audio(_game, 'ship_kill', 0.4, false);
+    $this.options.sfx.ship_kill = objShipKill;
 
     // Init Values
     $this.resetAnimationSteps();
@@ -281,6 +292,16 @@ var ShipGameObject = function(game, state, options) {
    * @return void
    */
   _private.moveForwards = function() {
+    // Play MovementSound
+    var numMoveCounter = $this.options.animation_steps['moveSouth'];
+    numMoveCounter += $this.options.animation_steps['moveNorth'];
+    numMoveCounter += $this.options.animation_steps['moveEast'];
+    numMoveCounter += $this.options.animation_steps['moveWest'];
+    if(numMoveCounter == 0) {
+      $this.options.sfx.ship_move.play();
+    }
+
+    // Do Direction Movement
     if($this.options.direction == 'N') {
       _private.moveNorth();
     }
@@ -320,6 +341,16 @@ var ShipGameObject = function(game, state, options) {
    * @return void
    */
   _private.moveBackwards = function() {
+    // Play MovementSound
+    var numMoveCounter = $this.options.animation_steps['moveSouth'];
+    numMoveCounter += $this.options.animation_steps['moveNorth'];
+    numMoveCounter += $this.options.animation_steps['moveEast'];
+    numMoveCounter += $this.options.animation_steps['moveWest'];
+    if(numMoveCounter == 0) {
+      $this.options.sfx.ship_move.play();
+    }
+
+    // Do Direction Movement
     if($this.options.direction == 'N') {
       _private.moveSouth();
     }
@@ -824,6 +855,20 @@ var ShipGameObject = function(game, state, options) {
   };
 
   /**
+   * resetAllSounds
+   * @description
+   * This Resets All Sounds
+   *
+   * @param void
+   * @return void
+   */
+  $this.resetAllSounds = function() {
+    for(var strIndex in $this.options.sfx) {
+      $this.options.sfx[strIndex].stop();
+    }
+  };
+
+  /**
    * checkAnimationSteps
    * @description
    * This checks if the Number of Animation Steps are plausible
@@ -917,28 +962,38 @@ var ShipGameObject = function(game, state, options) {
   $this.renderHUD = function() {
     var objShip = $this.getGameOject();
 
+    // Render Camera Position
+    var numTransformX = objShip.x;
+    var numTransformY = objShip.y;
+    if($this.options.camera_focus) {
+      numTransformX = -1 * objShip.x + 640 * 0.5 - objShip.width / 2;
+      numTransformY = -1 * objShip.y + 640 * 0.5 - objShip.height / 2;
+      _game.cameras.defaultCamera.transform.x = numTransformX;
+    	_game.cameras.defaultCamera.transform.y = numTransformY;
+    };
+
     // Render Player Name
-    $this.options.hud.playerText.x = objShip.x - 1;
-    $this.options.hud.playerText.y = objShip.y - 22;
+    $this.options.hud.playerText.x = objShip.x + numTransformX - 1;
+    $this.options.hud.playerText.y = objShip.y + numTransformY - 22;
 
     // Render Action Text
     var numAnimation = $this.options.animation_steps.loadCannon + $this.options.animation_steps.fireCannon;
-    $this.options.hud.actionText.x = objShip.x;
-    $this.options.hud.actionText.y = objShip.y + 60 - numAnimation;
+    $this.options.hud.actionText.x = objShip.x + numTransformX;
+    $this.options.hud.actionText.y = objShip.y + numTransformY + 60 - numAnimation;
     $this.options.hud.actionText.style.opacity = 1 - numAnimation / 100;
 
     // Render HealthBar
-    $this.options.hud.healthBar.bg.x = objShip.x - 1;
-    $this.options.hud.healthBar.bg.y = objShip.y - 1
-    $this.options.hud.healthBar.bar.x = objShip.x;
-    $this.options.hud.healthBar.bar.y = objShip.y
+    $this.options.hud.healthBar.bg.x = objShip.x + numTransformX - 1;
+    $this.options.hud.healthBar.bg.y = objShip.y + numTransformY - 1
+    $this.options.hud.healthBar.bar.x = objShip.x + numTransformX;
+    $this.options.hud.healthBar.bar.y = objShip.y + numTransformY
     $this.options.hud.healthBar.bar.counter.current = $this.options.health;
 
     // Render CannonBar
-    $this.options.hud.cannonBar.bg.x = objShip.x - 1;
-    $this.options.hud.cannonBar.bg.y = objShip.y + 9;
-    $this.options.hud.cannonBar.bar.x = objShip.x;
-    $this.options.hud.cannonBar.bar.y = objShip.y + 10;
+    $this.options.hud.cannonBar.bg.x = objShip.x + numTransformX - 1;
+    $this.options.hud.cannonBar.bg.y = objShip.y + numTransformY + 9;
+    $this.options.hud.cannonBar.bar.x = objShip.x + numTransformX;
+    $this.options.hud.cannonBar.bar.y = objShip.y + numTransformY + 10;
     $this.options.hud.cannonBar.bar.counter.current = $this.options.cannon_loads;
 
     // Rendering Ship Damage
@@ -957,6 +1012,11 @@ var ShipGameObject = function(game, state, options) {
 
     // Render Sinking Ship
     if($this.options.health <= 0) {
+      if($this.options.gameObject.alpha == 1) {
+        $this.resetAllSounds();
+        $this.options.sfx.ship_kill.play();
+      }
+
       $this.options.status = 'sinking';
       $this.options.gameObject.alpha -= 0.001;
       $this.options.hud.playerText.y += (1 - $this.options.gameObject.alpha) * 90;

@@ -15,7 +15,7 @@ function createWindow () {
   // Create the browser window.
   mainWindow = new BrowserWindow({
     width: 1024,
-    height: 640,
+    height: 660,
     resizable: false,
     title: "GitPirates - v1.0 - by severin.holm",
   });

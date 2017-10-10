@@ -20,8 +20,9 @@ var PlayGameState = function(game, options) {
    * Constructor
    */
   this.init = function() {
+    // Create Demo Player
     setTimeout(function() {
-      var objPlayer = new ShipGameObject(_game, _state, {tilemap: $this.options.tilemap});
+      var objPlayer = new ShipGameObject(_game, _state, {tilemap: $this.options.tilemap, camera_focus: true});
       $this.addPlayer(objPlayer);
       runDemo(objPlayer, 0);
     }, 5000);
@@ -49,12 +50,11 @@ var PlayGameState = function(game, options) {
       _state.addSpriteSheet('explosion', 'app/assets/images/sprites/explosion.png', 75, 75);
       _state.addSpriteSheet('ships', 'app/assets/images/sprites/ships.png', 76, 123);
 
-      // Load UIX Sprites
-      _state.addSpriteSheet('ships', 'app/assets/images/sprites/ships.png', 76, 123);
-
       // Load Sound Effects
       _state.addAudio('cannon_fire', 'app/assets/sfx/cannon.mp3');
       _state.addAudio('ship_damage', 'app/assets/sfx/explosion.mp3');
+      _state.addAudio('ship_move', 'app/assets/sfx/move.mp3');
+      _state.addAudio('ship_kill', 'app/assets/sfx/killing.mp3');
 
       // Load Music
       _state.addAudio('battle_theme', 'app/assets/music/battle.mp3');
@@ -71,6 +71,11 @@ var PlayGameState = function(game, options) {
    * @return void
    */
   _state.create = function() {
+    // Create External GUI Components
+    $('#Border').css('background-image', 'url("app/assets/images/gui/border_ingame.png")');
+    $this.createTerminal();
+
+
     // Create TileMap
     var objTileMap = new Kiwi.GameObjects.Tilemap.TileMap(_state, 'tilemap', _state.textures.tiles);
     _state.addChild(objTileMap.layers[0]); // Water
@@ -114,6 +119,19 @@ var PlayGameState = function(game, options) {
    */
   this.addPlayer = function(objPlayer) {
     $this.options.players[objPlayer.getId()] = objPlayer;
+  };
+
+
+  this.createTerminal = function() {
+    var objTerminalTools = function(command, term) {
+
+    };
+    $('#JTerminal').terminal(objTerminalTools, {
+        greetings: 'GitPirates: 1.0 - Terminal',
+        onBlur: function() {
+            return false;
+        }
+    });
   };
 
   /**

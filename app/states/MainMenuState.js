@@ -33,12 +33,9 @@ var MainMenuState = function(game, options) {
   _state.preload = function () {
     // Load All Images
     _state.addImage('logo_big', 'app/assets/images/gui/logo_big.png', true, 631, 155);
-    _state.addImage('bg_01', 'app/assets/images/gui/background_01.png', true, 1024, 640, 0, 0);
+    _state.addImage('border_all', 'app/assets/images/gui/border_all.png', true, 1024, 640);
+    _state.addImage('wood', 'app/assets/images/gui/wood.png', true, 128, 128, 0, 0);
     _state.addImage('banner_menu', 'app/assets/images/gui/banner_menu.png', true, 800, 346);
-    _state.addImage('btn_01', 'app/assets/images/gui/btn_01.png', true, 302, 52);
-    _state.addImage('btn_02', 'app/assets/images/gui/btn_02.png', true, 302, 52);
-    _state.addImage('btn_03', 'app/assets/images/gui/btn_03.png', true, 302, 52);
-    _state.addImage('btn_04', 'app/assets/images/gui/btn_04.png', true, 302, 52);
 
     // Load Music
     _state.addAudio('main_theme', 'app/assets/music/main.mp3');
@@ -56,8 +53,14 @@ var MainMenuState = function(game, options) {
    */
   _state.create = function() {
     // Create Background Image
-    var objBackground = new Kiwi.GameObjects.Sprite(_state, 'bg_01');
-    _state.addChild(objBackground);
+    for(var numX = 0; numX < 8; numX++) {
+      for(var numY = 0; numY < 5; numY++) {
+        var objBackground = new Kiwi.GameObjects.Sprite(_state, 'wood');
+        objBackground.x = numX * 128;
+        objBackground.y = numY * 128;
+        _state.addChild(objBackground);
+      }
+    }
 
     // Create Logo
     var objLogo = new Kiwi.GameObjects.Sprite(_state, 'logo_big');
@@ -65,35 +68,17 @@ var MainMenuState = function(game, options) {
     objLogo.y = 25;
     _state.addChild(objLogo);
 
+    // Create Border
+    var objBorderAll = new Kiwi.GameObjects.Sprite(_state, 'border_all');
+    objBorderAll.x = 0;
+    objBorderAll.y = 0;
+    _state.addChild(objBorderAll);
+
     // Create Banner Menu
     var objBannerMenu = new Kiwi.GameObjects.Sprite(_state, 'banner_menu');
     objBannerMenu.x = 110;
     objBannerMenu.y = 180;
     _state.addChild(objBannerMenu);
-
-    // Create Config Button
-    var objConfigBtn = new Kiwi.GameObjects.Sprite(_state, 'btn_01');
-    objConfigBtn.x = 360;
-    objConfigBtn.y = 220;
-    _state.addChild(objConfigBtn);
-
-    // Create Config Button
-    var objOfflineBtn = new Kiwi.GameObjects.Sprite(_state, 'btn_02');
-    objOfflineBtn.x = 360;
-    objOfflineBtn.y = 290;
-    _state.addChild(objOfflineBtn);
-
-    // Create Config Button
-    var objOnlineBtn = new Kiwi.GameObjects.Sprite(_state, 'btn_03');
-    objOnlineBtn.x = 360;
-    objOnlineBtn.y = 360;
-    _state.addChild(objOnlineBtn);
-
-    // Create Config Button
-    var objQuitBtn = new Kiwi.GameObjects.Sprite(_state, 'btn_04');
-    objQuitBtn.x = 360;
-    objQuitBtn.y = 430;
-    _state.addChild(objQuitBtn);
 
     // Create Background music
     var objMainThemeMusic = new Kiwi.Sound.Audio(_game, 'main_theme', 0.3, true);
