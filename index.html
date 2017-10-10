@@ -21,6 +21,9 @@
     <div id="CodePirate"></div>
     <div id="Grid"></div>
 
+    <!-- Insert this line above script imports  -->
+    <script>if (typeof module === 'object') {window.module = module; module = undefined;}</script>
+
     <!-- Optional JavaScript -->
     <!-- jQuery first, then Popper.js, then Bootstrap JS -->
     <script src="node_modules/jquery/dist/jquery.min.js"></script>
@@ -34,21 +37,29 @@
     <script src="app/gameObjects/ShipGameObject.js"></script>
 
     <!-- States -->
+    <script src="app/states/MainMenuState.js"></script>
     <script src="app/states/PlayGameState.js"></script>
+
+    <!-- Insert this line after script imports -->
+    <script>if (window.module) module = window.module;</script>
 
     <!-- Main Method -->
     <script>
-    $(function() {
-      var objApp = new App();
+      $(function() {
+        var objApp = new App();
 
-      // Debug Grid
-      for(var numX = 0; numX < 10; numX++) {
-        for(var numY = 0; numY < 10; numY++) {
-          //$('#Grid').append('<div style="position: absolute; top:' + numY*64 + 'px; left:' + numX*64 + 'px; width: 64px; height: 64px; border: 1px dashed #BDBDBD; color: #000000; font-size: 10px;">' + numX + ' : ' + numY + '</div>')
+        // Debug Grid
+        for(var numX = 0; numX < 10; numX++) {
+          for(var numY = 0; numY < 10; numY++) {
+            //$('#Grid').append('<div style="position: absolute; top:' + numY*64 + 'px; left:' + numX*64 + 'px; width: 64px; height: 64px; border: 1px dashed #BDBDBD; color: #000000; font-size: 10px;">' + numX + ' : ' + numY + '</div>')
+          }
         }
-      }
+      });
+    </script>
 
-    });
+    <!-- Electron Require Code -->
+    <script>
+      require('./renderer.js')
     </script>
   </body>
 </html>

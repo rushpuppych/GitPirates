@@ -22,10 +22,11 @@ var App = function(options) {
 
     // Register States
     _private.registerState('PlayGameState', new PlayGameState($this.options.game));
+    _private.registerState('MainMenuState', new MainMenuState($this.options.game));
 
     // Run Game
     _private.createStates();
-    $this.options.game.states.switchState("PlayGameState");
+    $this.options.game.states.switchState("MainMenuState");
   };
 
   /**
@@ -55,7 +56,7 @@ var App = function(options) {
     // Create Game
     var objOptions = {
     	renderer: Kiwi.RENDERER_WEBGL,
-    	width: 640,
+    	width: 1024,
     	height: 640
     }
     var objGame = new Kiwi.Game('CodePirate', 'CodePirate', null, objOptions);
