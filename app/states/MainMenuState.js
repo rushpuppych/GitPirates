@@ -81,8 +81,13 @@ var MainMenuState = function(game, options) {
     objBannerMenu.y = 180;
     _state.addChild(objBannerMenu);
 
-    // Selection Banner
-    // todo: show "Select your Ship" Banner
+    // Selection Title
+    var objSelectionTitle = new Kiwi.HUD.Widget.TextField (_game, 'Select your ship', 425, 205);
+    objSelectionTitle.style.fontFamily = "Germania One";
+    objSelectionTitle.style.fontSize = "26px";
+    objSelectionTitle.style.textAlign = "center";
+    objSelectionTitle.style.color = "#848484";
+    _game.huds.defaultHUD.addWidget(objSelectionTitle);
 
     // Create Ship 1
     var objShip_01 = new Kiwi.GameObjects.Sprite(_state, 'ships');
@@ -91,7 +96,7 @@ var MainMenuState = function(game, options) {
     objShip_01.animation.switchTo(11);
     _state.addChild(objShip_01);
 
-    var objShip_01_name = new Kiwi.HUD.Widget.TextField (_game, 'Empty', 275, 245);
+    var objShip_01_name = new Kiwi.HUD.Widget.TextField (_game, 'Empty', 275, 255);
     objShip_01_name.style.fontFamily = "Germania One";
     objShip_01_name.style.fontSize = "20px";
     objShip_01_name.style.textAlign = "center";
@@ -126,7 +131,7 @@ var MainMenuState = function(game, options) {
     objShip_02.animation.switchTo(11);
     _state.addChild(objShip_02);
 
-    var objShip_02_name = new Kiwi.HUD.Widget.TextField (_game, 'Empty', 475, 245);
+    var objShip_02_name = new Kiwi.HUD.Widget.TextField (_game, 'Empty', 475, 255);
     objShip_02_name.style.fontFamily = "Germania One";
     objShip_02_name.style.fontSize = "20px";
     objShip_02_name.style.textAlign = "center";
@@ -161,7 +166,7 @@ var MainMenuState = function(game, options) {
     objShip_03.animation.switchTo(11);
     _state.addChild(objShip_03);
 
-    var objShip_03_name = new Kiwi.HUD.Widget.TextField (_game, 'Empty', 675, 245);
+    var objShip_03_name = new Kiwi.HUD.Widget.TextField (_game, 'Empty', 675, 255);
     objShip_03_name.style.fontFamily = "Germania One";
     objShip_03_name.style.fontSize = "20px";
     objShip_03_name.style.textAlign = "center";
@@ -188,6 +193,13 @@ var MainMenuState = function(game, options) {
     objShip_03_ranking.style.textAlign = "center";
     objShip_03_ranking.style.color = "#848484";
     _game.huds.defaultHUD.addWidget(objShip_03_ranking);
+
+    // Create Event layers
+    var strHtml = '';
+    strHtml += '<div class="select-ship" style="position: absolute; top: 250px; left: 225px; height: 240px; width: 160px;"></div>';
+    strHtml += '<div class="select-ship" style="position: absolute; top: 250px; left: 425px; height: 240px; width: 160px;"></div>';
+    strHtml += '<div class="select-ship" style="position: absolute; top: 250px; left: 625px; height: 240px; width: 160px;"></div>';
+    $('#EventLayer').html(strHtml);
 
     // Create Background music
     var objMainThemeMusic = new Kiwi.Sound.Audio(_game, 'main_theme', 0.3, true);

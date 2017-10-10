@@ -1,0 +1,10 @@
+
+.select-ship {
+  cursor: pointer;
+  border: 2px dashed #848484;
+  border-radius: 10px;
+}
+
+.select-ship:hover {
+  border: 2px solid #000000;
+}
