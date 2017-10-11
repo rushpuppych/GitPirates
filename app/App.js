@@ -26,7 +26,8 @@ var App = function(options) {
 
     // Run Game
     _private.createStates();
-    $this.options.game.states.switchState("MainMenuState");
+    //$this.options.game.states.switchState("MainMenuState");
+    $this.options.game.states.switchState("PlayGameState");
   };
 
   /**

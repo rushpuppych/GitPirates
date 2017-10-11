@@ -11,13 +11,36 @@ var MainMenuState = function(game, options) {
 
   // CodePirate System Variables
   this.options = $.extend({
-    state: {}
+    state: {},
+    mouse: {x:0,y:0},
+    ships: {
+      ship_01: {name:"Empty",color:"white",lang:"---",score:"---",qualified:false},
+      ship_02: {name:"Empty",color:"white",lang:"---",score:"---",qualified:false},
+      ship_03: {name:"Empty",color:"white",lang:"---",score:"---",qualified:false}
+    }
   }, options);
 
   /**
    * Constructor
    */
   this.init = function() {
+    // Load Ship Configurations
+    const objFs = require('fs-jetpack');
+    if(objFs.exists('ship_01.json')) {
+      $this.options.ships.ship_01 = JSON.parse(objFs.read('ship_01.json'));
+    }
+    if(objFs.exists('ship_02.json')) {
+      $this.options.ships.ship_02 = JSON.parse(objFs.read('ship_02.json'));
+    }
+    if(objFs.exists('ship_03.json')) {
+      $this.options.ships.ship_03 = JSON.parse(objFs.read('ship_03.json'));
+    }
+
+    // Native MousePosition event
+    $(document).mousemove(function(event) {
+      $this.options.mouse.x = event.pageX;
+      $this.options.mouse.y = event.pageY;
+    });
   };
 
   /**
@@ -89,117 +112,10 @@ var MainMenuState = function(game, options) {
     objSelectionTitle.style.color = "#848484";
     _game.huds.defaultHUD.addWidget(objSelectionTitle);
 
-    // Create Ship 1
-    var objShip_01 = new Kiwi.GameObjects.Sprite(_state, 'ships');
-    objShip_01.x = 265;
-    objShip_01.y = 285;
-    objShip_01.animation.switchTo(11);
-    _state.addChild(objShip_01);
-
-    var objShip_01_name = new Kiwi.HUD.Widget.TextField (_game, 'Empty', 275, 255);
-    objShip_01_name.style.fontFamily = "Germania One";
-    objShip_01_name.style.fontSize = "20px";
-    objShip_01_name.style.textAlign = "center";
-    objShip_01_name.style.color = "#848484";
-    _game.huds.defaultHUD.addWidget(objShip_01_name);
-
-    var objShip_01_language = new Kiwi.HUD.Widget.TextField (_game, 'Lang: ---', 275, 420);
-    objShip_01_language.style.fontFamily = "Germania One";
-    objShip_01_language.style.fontSize = "14px";
-    objShip_01_language.style.textAlign = "center";
-    objShip_01_language.style.color = "#848484";
-    _game.huds.defaultHUD.addWidget(objShip_01_language);
-
-    var objShip_01_score = new Kiwi.HUD.Widget.TextField (_game, 'Score: ---', 275, 440);
-    objShip_01_score.style.fontFamily = "Germania One";
-    objShip_01_score.style.fontSize = "14px";
-    objShip_01_score.style.textAlign = "center";
-    objShip_01_score.style.color = "#848484";
-    _game.huds.defaultHUD.addWidget(objShip_01_score);
-
-    var objShip_01_ranking = new Kiwi.HUD.Widget.TextField (_game, 'Not Qualified', 275, 460);
-    objShip_01_ranking.style.fontFamily = "Germania One";
-    objShip_01_ranking.style.fontSize = "14px";
-    objShip_01_ranking.style.textAlign = "center";
-    objShip_01_ranking.style.color = "#848484";
-    _game.huds.defaultHUD.addWidget(objShip_01_ranking);
-
-    // Create Ship 2
-    var objShip_02 = new Kiwi.GameObjects.Sprite(_state, 'ships');
-    objShip_02.x = 465;
-    objShip_02.y = 285;
-    objShip_02.animation.switchTo(11);
-    _state.addChild(objShip_02);
-
-    var objShip_02_name = new Kiwi.HUD.Widget.TextField (_game, 'Empty', 475, 255);
-    objShip_02_name.style.fontFamily = "Germania One";
-    objShip_02_name.style.fontSize = "20px";
-    objShip_02_name.style.textAlign = "center";
-    objShip_02_name.style.color = "#848484";
-    _game.huds.defaultHUD.addWidget(objShip_02_name);
-
-    var objShip_02_language = new Kiwi.HUD.Widget.TextField (_game, 'Lang: ---', 475, 420);
-    objShip_02_language.style.fontFamily = "Germania One";
-    objShip_02_language.style.fontSize = "14px";
-    objShip_02_language.style.textAlign = "center";
-    objShip_02_language.style.color = "#848484";
-    _game.huds.defaultHUD.addWidget(objShip_02_language);
-
-    var objShip_02_score = new Kiwi.HUD.Widget.TextField (_game, 'Score: ---', 475, 440);
-    objShip_02_score.style.fontFamily = "Germania One";
-    objShip_02_score.style.fontSize = "14px";
-    objShip_02_score.style.textAlign = "center";
-    objShip_02_score.style.color = "#848484";
-    _game.huds.defaultHUD.addWidget(objShip_02_score);
-
-    var objShip_02_ranking = new Kiwi.HUD.Widget.TextField (_game, 'Not Qualified', 475, 460);
-    objShip_02_ranking.style.fontFamily = "Germania One";
-    objShip_02_ranking.style.fontSize = "14px";
-    objShip_02_ranking.style.textAlign = "center";
-    objShip_02_ranking.style.color = "#848484";
-    _game.huds.defaultHUD.addWidget(objShip_02_ranking);
-
-    // Create Ship 3
-    var objShip_03 = new Kiwi.GameObjects.Sprite(_state, 'ships');
-    objShip_03.x = 665;
-    objShip_03.y = 285;
-    objShip_03.animation.switchTo(11);
-    _state.addChild(objShip_03);
-
-    var objShip_03_name = new Kiwi.HUD.Widget.TextField (_game, 'Empty', 675, 255);
-    objShip_03_name.style.fontFamily = "Germania One";
-    objShip_03_name.style.fontSize = "20px";
-    objShip_03_name.style.textAlign = "center";
-    objShip_03_name.style.color = "#848484";
-    _game.huds.defaultHUD.addWidget(objShip_03_name);
-
-    var objShip_03_language = new Kiwi.HUD.Widget.TextField (_game, 'Lang: ---', 675, 420);
-    objShip_03_language.style.fontFamily = "Germania One";
-    objShip_03_language.style.fontSize = "14px";
-    objShip_03_language.style.textAlign = "center";
-    objShip_03_language.style.color = "#848484";
-    _game.huds.defaultHUD.addWidget(objShip_03_language);
-
-    var objShip_03_score = new Kiwi.HUD.Widget.TextField (_game, 'Score: ---', 675, 440);
-    objShip_03_score.style.fontFamily = "Germania One";
-    objShip_03_score.style.fontSize = "14px";
-    objShip_03_score.style.textAlign = "center";
-    objShip_03_score.style.color = "#848484";
-    _game.huds.defaultHUD.addWidget(objShip_03_score);
-
-    var objShip_03_ranking = new Kiwi.HUD.Widget.TextField (_game, 'Not Qualified', 675, 460);
-    objShip_03_ranking.style.fontFamily = "Germania One";
-    objShip_03_ranking.style.fontSize = "14px";
-    objShip_03_ranking.style.textAlign = "center";
-    objShip_03_ranking.style.color = "#848484";
-    _game.huds.defaultHUD.addWidget(objShip_03_ranking);
-
-    // Create Event layers
-    var strHtml = '';
-    strHtml += '<div class="select-ship" style="position: absolute; top: 250px; left: 225px; height: 240px; width: 160px;"></div>';
-    strHtml += '<div class="select-ship" style="position: absolute; top: 250px; left: 425px; height: 240px; width: 160px;"></div>';
-    strHtml += '<div class="select-ship" style="position: absolute; top: 250px; left: 625px; height: 240px; width: 160px;"></div>';
-    $('#EventLayer').html(strHtml);
+    // Create Ships
+    $this.options.ships.ship_01 = _private.createShip($this.options.ships.ship_01, 0);
+    $this.options.ships.ship_02 = _private.createShip($this.options.ships.ship_02, 200);
+    $this.options.ships.ship_03 = _private.createShip($this.options.ships.ship_03, 400);
 
     // Create Background music
     var objMainThemeMusic = new Kiwi.Sound.Audio(_game, 'main_theme', 0.3, true);
@@ -217,7 +133,125 @@ var MainMenuState = function(game, options) {
    * @return void
    */
   _state.update = function() {
+    Kiwi.State.prototype.update.call(this);
 
+    // Handle Ship Selection
+    _private.handleShipSelection(260, 240, $this.options.ships.ship_01);
+    _private.handleShipSelection(460, 240, $this.options.ships.ship_02);
+    _private.handleShipSelection(660, 240, $this.options.ships.ship_03);
+
+  };
+
+  /**
+   * createShip
+   * @description
+   * This creates a Ship on the MainMenu Gui
+   *
+   * @param objShipOptions    This is the Ship Option Object
+   * @param numPosX           This is the Rendering X Position
+   * @return objShipOptions   This is the manipulatet ship Options
+   */
+  _private.createShip = function(objShipOptions, numPosX) {
+    objShipOptions.objects = {};
+    var numShipFrame = 11;
+    if(objShipOptions.color == 'white'){numShipFrame = 11};
+    if(objShipOptions.color == 'green'){numShipFrame = 6};
+    if(objShipOptions.color == 'blue'){numShipFrame = 13};
+    if(objShipOptions.color == 'yellow'){numShipFrame = 20};
+    if(objShipOptions.color == 'red'){numShipFrame = 19};
+
+    var objShip = new Kiwi.GameObjects.Sprite(_state, 'ships');
+    objShip.x = 265 + numPosX;
+    objShip.y = 285;
+    objShip.animation.switchTo(numShipFrame);
+    objShipOptions.objects.ship = objShip;
+    _state.addChild(objShip);
+
+    var objShipName = new Kiwi.HUD.Widget.TextField (_game, objShipOptions.name, 275 + numPosX, 255);
+    objShipName.style.fontFamily = "Germania One";
+    objShipName.style.fontSize = "20px";
+    objShipName.style.textAlign = "center";
+    objShipName.style.color = "#848484";
+    objShipOptions.objects.name = objShipName;
+    _game.huds.defaultHUD.addWidget(objShipName);
+
+    var objShipLang = new Kiwi.HUD.Widget.TextField (_game, 'Lang: ' + objShipOptions.lang, 275 + numPosX, 420);
+    objShipLang.style.fontFamily = "Germania One";
+    objShipLang.style.fontSize = "14px";
+    objShipLang.style.textAlign = "center";
+    objShipLang.style.color = "#848484";
+    objShipOptions.objects.lang = objShipLang;
+    _game.huds.defaultHUD.addWidget(objShipLang);
+
+    var objShipScore = new Kiwi.HUD.Widget.TextField (_game, 'Score: ' + objShipOptions.score, 275 + numPosX, 440);
+    objShipScore.style.fontFamily = "Germania One";
+    objShipScore.style.fontSize = "14px";
+    objShipScore.style.textAlign = "center";
+    objShipScore.style.color = "#848484";
+    objShipOptions.objects.score = objShipScore;
+    _game.huds.defaultHUD.addWidget(objShipScore);
+
+    var strQualification = 'Not Qualified';
+    if(objShipOptions.qualified) {
+      strQualification = '[ Qualified ]';
+    };
+    var objShipRanking = new Kiwi.HUD.Widget.TextField (_game, strQualification, 275 + numPosX, 460);
+    objShipRanking.style.fontFamily = "Germania One";
+    objShipRanking.style.fontSize = "14px";
+    objShipRanking.style.textAlign = "center";
+    objShipRanking.style.color = "#848484";
+    objShipOptions.objects.ranking = objShipRanking;
+    _game.huds.defaultHUD.addWidget(objShipRanking);
+
+    return objShipOptions;
+  };
+
+  /**
+   * isMouseOver
+   * @description
+   * This Returns true if the mouse cursor is over a speciffic place
+   *
+   * @param numX        The speciffic place X coordinate
+   * @param numY        The speciffic place Y coordinate
+   * @param objShip     The Ship Object
+   * @return void
+   */
+  _private.handleShipSelection = function(numX, numY, objShip) {
+    if(_private.isMouseOver(numX, numY, 130, 250)) {
+      objShip.objects.ship.rotation += 0.05;
+      objShip.objects.name.style.color = "#000000";
+      objShip.objects.lang.style.color = "#000000";
+      objShip.objects.score.style.color = "#000000";
+      objShip.objects.ranking.style.color = "#000000";
+    } else {
+      objShip.objects.ship.rotation = 0;
+      objShip.objects.name.style.color = "#848484";
+      objShip.objects.lang.style.color = "#848484";
+      objShip.objects.score.style.color = "#848484";
+      objShip.objects.ranking.style.color = "#848484";
+    }
+  };
+
+  /**
+   * isMouseOver
+   * @description
+   * This Returns true if the mouse cursor is over a speciffic place
+   *
+   * @param numX        The speciffic place X coordinate
+   * @param numY        The speciffic place Y coordinate
+   * @param numWidth    The speciffic place width
+   * @param numHeight   The speciffic place height
+   * @return bool       True if over and False if not
+   */
+  _private.isMouseOver = function(numX, numY, numWidth, numHeight){
+    var numMouseX = $this.options.mouse.x;
+  	var numMouseY = $this.options.mouse.y;
+    if(numMouseX > numX && numMouseX < (numX + numWidth)) {
+      if(numMouseY > numY && numMouseY < (numY + numHeight)) {
+        return true;
+      }
+    }
+    return false;
   };
 
   /**
