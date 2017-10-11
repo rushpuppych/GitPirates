@@ -12,12 +12,13 @@ var MainMenuState = function(game, options) {
   // CodePirate System Variables
   this.options = $.extend({
     state: {},
-    mouse: {x:0,y:0},
+    mouse: {x:0,y:0,isDown:false},
     ships: {
       ship_01: {name:"Empty",color:"white",lang:"---",score:"---",qualified:false},
       ship_02: {name:"Empty",color:"white",lang:"---",score:"---",qualified:false},
       ship_03: {name:"Empty",color:"white",lang:"---",score:"---",qualified:false}
-    }
+    },
+    music: {}
   }, options);
 
   /**
@@ -40,6 +41,12 @@ var MainMenuState = function(game, options) {
     $(document).mousemove(function(event) {
       $this.options.mouse.x = event.pageX;
       $this.options.mouse.y = event.pageY;
+    });
+    $(document).mousedown(function(event) {
+      $this.options.mouse.isDown = true;
+    });
+    $(document).mouseup(function(event) {
+      $this.options.mouse.isDown = false;
     });
   };
 
@@ -104,6 +111,8 @@ var MainMenuState = function(game, options) {
     objBannerMenu.y = 180;
     _state.addChild(objBannerMenu);
 
+    // TODO: GAME STATE HUD CREATION
+
     // Selection Title
     var objSelectionTitle = new Kiwi.HUD.Widget.TextField (_game, 'Select your ship', 425, 205);
     objSelectionTitle.style.fontFamily = "Germania One";
@@ -120,6 +129,7 @@ var MainMenuState = function(game, options) {
     // Create Background music
     var objMainThemeMusic = new Kiwi.Sound.Audio(_game, 'main_theme', 0.3, true);
     objMainThemeMusic.play();
+    $this.options.music = objMainThemeMusic;
   };
 
   /**
@@ -139,6 +149,7 @@ var MainMenuState = function(game, options) {
     _private.handleShipSelection(260, 240, $this.options.ships.ship_01);
     _private.handleShipSelection(460, 240, $this.options.ships.ship_02);
     _private.handleShipSelection(660, 240, $this.options.ships.ship_03);
+
 
   };
 
@@ -223,6 +234,29 @@ var MainMenuState = function(game, options) {
       objShip.objects.lang.style.color = "#000000";
       objShip.objects.score.style.color = "#000000";
       objShip.objects.ranking.style.color = "#000000";
+
+      // Load Next State
+      if(_private.isMousePressed()) {
+        if(objShip.color == 'white') {
+          // Load Configuration State
+          // todo: Disable Game State HUD
+          // todo: Switch State to Ship Config State
+          // todo: Send Music Object to Ship Config State
+
+        } else {
+          // Load Play Menu State
+          // todo: Disable Game State HUD
+          // todo: Switch State to Play Menu State
+          // todo: Send Music Object to Play Menu State
+          // todo: PlayState Menu has 3 Options: Qualification, Singleplayer, Multiplayer
+
+          // todelete:
+          $this.options.music.stop();
+          _game.states.switchState("PlayGameState");
+          // end todelete
+        }
+      }
+
     } else {
       objShip.objects.ship.rotation = 0;
       objShip.objects.name.style.color = "#848484";
@@ -252,6 +286,18 @@ var MainMenuState = function(game, options) {
       }
     }
     return false;
+  };
+
+  /**
+   * isMousePressed
+   * @description
+   * This returns True if the MouseBtn is pressed
+   *
+   * @param void
+   * @return bool       True if over and False if not
+   */
+  _private.isMousePressed = function() {
+    return $this.options.mouse.isDown;
   };
 
   /**
