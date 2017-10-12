@@ -111,8 +111,6 @@ var MainMenuState = function(game, options) {
     objBannerMenu.y = 180;
     _state.addChild(objBannerMenu);
 
-    // TODO: GAME STATE HUD CREATION
-
     // Selection Title
     var objSelectionTitle = new Kiwi.HUD.Widget.TextField (_game, 'Select your ship', 425, 205);
     objSelectionTitle.style.fontFamily = "Germania One";
@@ -149,8 +147,6 @@ var MainMenuState = function(game, options) {
     _private.handleShipSelection(260, 240, $this.options.ships.ship_01);
     _private.handleShipSelection(460, 240, $this.options.ships.ship_02);
     _private.handleShipSelection(660, 240, $this.options.ships.ship_03);
-
-
   };
 
   /**
@@ -238,22 +234,11 @@ var MainMenuState = function(game, options) {
       // Load Next State
       if(_private.isMousePressed()) {
         if(objShip.color == 'white') {
-          // Load Configuration State
-          // todo: Disable Game State HUD
-          // todo: Switch State to Ship Config State
-          // todo: Send Music Object to Ship Config State
-
+          _game.huds.defaultHUD.removeAllWidgets();
+          _game.states.switchState("ConfigShipState");
         } else {
-          // Load Play Menu State
-          // todo: Disable Game State HUD
-          // todo: Switch State to Play Menu State
-          // todo: Send Music Object to Play Menu State
-          // todo: PlayState Menu has 3 Options: Qualification, Singleplayer, Multiplayer
-
-          // todelete:
-          $this.options.music.stop();
-          _game.states.switchState("PlayGameState");
-          // end todelete
+          _game.huds.defaultHUD.removeAllWidgets();
+          _game.states.switchState("MissionSelectState");
         }
       }
 

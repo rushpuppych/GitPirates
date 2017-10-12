@@ -22,11 +22,13 @@ var App = function(options) {
 
     // Register States
     _private.registerState('MainMenuState', new MainMenuState($this.options.game));
+    _private.registerState('ConfigShipState', new ConfigShipState($this.options.game));
+    _private.registerState('MissionSelectState', new MissionSelectState($this.options.game));
     _private.registerState('PlayGameState', new PlayGameState($this.options.game));
 
     // Run Game
     _private.createStates();
-    $this.options.game.states.switchState("MainMenuState");
+    $this.options.game.states.switchState("ConfigShipState");
   };
 
   /**
