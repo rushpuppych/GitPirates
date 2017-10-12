@@ -3,17 +3,25 @@
  * @description
  * CodePirate is a Programming learning Game for Geeks
  */
-var ConfigShipState = function(game, options) {
+var ConfigShipState = function(game, app, options) {
   var $this = this;
+  var _app = app;
   var _private = {};
   var _game = game;
   var _state = new Kiwi.State('ConfigShipState');
+  var helper = new Helper();
 
   // CodePirate System Variables
   this.options = $.extend({
+    ship_config: "",
     state: {},
     music: {},
-    ship: {}
+    ship: {},
+    gui: {},
+    click: {
+      savebtn: false,
+      backbtn: false
+    }
   }, options);
 
   /**
@@ -27,7 +35,7 @@ var ConfigShipState = function(game, options) {
    * EventManager
    */
   this.eventManager = function() {
-    $('body').on('change', '#ship_color', function() {
+    $('body').on('change', '#input_color', function() {
       _private.changeShipColor($(this).val());
     });
   };
@@ -49,9 +57,8 @@ var ConfigShipState = function(game, options) {
     _state.addImage('wood', 'app/assets/images/gui/wood.png', true, 128, 128, 0, 0);
     _state.addImage('banner_menu', 'app/assets/images/gui/banner_menu.png', true, 800, 346);
     _state.addSpriteSheet('ships', 'app/assets/images/sprites/ships.png', 76, 123);
-
-    // Load Music
-    _state.addAudio('main_theme', 'app/assets/music/main.mp3');
+    _state.addSpriteSheet('back_button', 'app/assets/images/gui/back_button.png', 204, 54);
+    _state.addSpriteSheet('save_button', 'app/assets/images/gui/save_button.png', 204, 54);
   };
 
   /**
@@ -65,6 +72,10 @@ var ConfigShipState = function(game, options) {
    * @return void
    */
   _state.create = function() {
+    // Reset Button states
+    $this.options.click.savebtn = false;
+    $this.options.click.backbtn = false;
+
     // Create Background Image
     for(var numX = 0; numX < 8; numX++) {
       for(var numY = 0; numY < 5; numY++) {
@@ -93,19 +104,14 @@ var ConfigShipState = function(game, options) {
     objBannerMenu.y = 180;
     _state.addChild(objBannerMenu);
 
-    // Create Background music
-    var objMainThemeMusic = new Kiwi.Sound.Audio(_game, 'main_theme', 0.3, true);
-    objMainThemeMusic.play();
-    $this.options.music = objMainThemeMusic;
-
     // Create Config Form
     var strForm = '';
     strForm += '<div style="position: absolute; top: 210px; left: 200px; height: 280px; width: 620px; font-family: Germania One;">';
     strForm += '   <table width="100%">'
     strForm += '      <tr>';
     strForm += '         <td width="45%" valign="top">';
-    strForm += '            Playername: <input type="text" class="form-control" placeholder="Player Name">';
-    strForm += '            Ship Color: <select id="ship_color" class="form-control">';
+    strForm += '            Playername: <input id="input_name" type="text" class="form-control" placeholder="Player Name">';
+    strForm += '            Ship Color: <select id="input_color" class="form-control">';
     strForm += '               <option value="green" selected>Green</option>';
     strForm += '               <option value="blue">Blue</option>';
     strForm += '               <option value="yellow">Yellow</option>';
@@ -115,16 +121,17 @@ var ConfigShipState = function(game, options) {
     strForm += '         <td width="10%" valign="top">';
     strForm += '         </td>';
     strForm += '         <td width="45%" valign="top">';
-    strForm += '            Language: <select class="form-control">';
-    strForm += '               <option>PHP</option>';
-    strForm += '               <option>C/C++</option>';
-    strForm += '               <option>Java</option>';
-    strForm += '               <option>JavaScript</option>';
-    strForm += '               <option>Python</option>';
-    strForm += '               <option>Ruby</option>';
+    strForm += '            Language: <select id="input_lang" class="form-control">';
+    strForm += '               <option value="PHP">PHP</option>';
+    strForm += '               <option value="CPP">C++</option>';
+    //strForm += '               <option value="JVM">Java</option>';
+    //strForm += '               <option value="JS">JavaScript</option>';
+    //strForm += '               <option value="PY">Python</option>';
+    //strForm += '               <option value="CS">CSharp</option>';
+    //strForm += '               <option value="RB">Ruby</option>';
     strForm += '            </select>';
-    strForm += '            Input/Output Folder Path: <input type="text" class="form-control" placeholder="">';
-    strForm += '            Execution Path: <input type="text" class="form-control" placeholder="">';
+    strForm += '            Input/Output Folder Path: <input id="input_iopath" type="text" class="form-control" placeholder="">';
+    strForm += '            Execution Path: <input id="input_exec" type="text" class="form-control" placeholder="">';
     strForm += '         </td>';
     strForm += '      </tr>';
     strForm += '   </table>';
@@ -138,6 +145,22 @@ var ConfigShipState = function(game, options) {
     objShip.animation.switchTo(6);
     $this.options.ship = objShip;
     _state.addChild(objShip);
+
+    // Create Back Button
+    var objBackBtn = new Kiwi.GameObjects.Sprite(_state, 'back_button');
+    objBackBtn.x = 130;
+    objBackBtn.y = 540;
+    objBackBtn.animation.switchTo(2);
+    _state.addChild(objBackBtn);
+    $this.options.gui.backbtn = objBackBtn;
+
+    // Create Save Button
+    var objSaveBtn = new Kiwi.GameObjects.Sprite(_state, 'save_button');
+    objSaveBtn.x = 690;
+    objSaveBtn.y = 540;
+    objSaveBtn.animation.switchTo(2);
+    _state.addChild(objSaveBtn);
+    $this.options.gui.savebtn = objSaveBtn;
   };
 
   /**
@@ -158,6 +181,32 @@ var ConfigShipState = function(game, options) {
   };
 
   /**
+   * saveShip
+   * @description
+   * This is saving a ship Configuration
+   *
+   * @param void
+   * @return void
+   */
+  _private.save = function() {
+    const objFs = require('fs-jetpack');
+    var objShipData = {
+      name: $('#input_name').val(),
+      color: $('#input_color').val(),
+      lang: $('#input_lang').val(),
+      executable: $('#input_exec').val(),
+      iofolder: $('#input_iopath').val(),
+      score: "0",
+      qualified: false
+    }
+
+    // TODO: Validation
+
+    var strShipData = JSON.stringify(objShipData);
+    objFs.write($this.options.ship_config, strShipData);
+  };
+
+  /**
    * KIWI: update
    * @description
    * This is the Kiwi GameEngine State Update Method. This will be called for
@@ -168,7 +217,37 @@ var ConfigShipState = function(game, options) {
    * @return void
    */
   _state.update = function() {
+    Kiwi.State.prototype.update.call(this);
+
+    // Ship Rotation
     $this.options.ship.rotation += 0.01;
+
+    // BackBtn Handling
+    if(helper.isMouseOverElement($this.options.gui.backbtn)) {
+      $this.options.gui.backbtn.animation.switchTo(0);
+      if(helper.isMousePressed() && !$this.options.click.backbtn) {
+        $this.options.click.backbtn = true;
+        _game.huds.defaultHUD.removeAllWidgets();
+        $('#FormLayer').html("");
+        _game.states.switchState("MainMenuState");
+      }
+    } else {
+      $this.options.gui.backbtn.animation.switchTo(2);
+    }
+
+    // SaveBtn Handling
+    if(helper.isMouseOverElement($this.options.gui.savebtn)) {
+      $this.options.gui.savebtn.animation.switchTo(0);
+      if(helper.isMousePressed() && !$this.options.click.savebtn) {
+        $this.options.click.savebtn = true;
+        _private.save();
+        _game.huds.defaultHUD.removeAllWidgets();
+        $('#FormLayer').html("");
+        _game.states.switchState("MainMenuState");
+      }
+    } else {
+      $this.options.gui.savebtn.animation.switchTo(2);
+    }
   };
 
   /**
@@ -179,8 +258,20 @@ var ConfigShipState = function(game, options) {
    * @param void
    * @return Kiwi.State
    */
-  $this.getState = function() {
+  this.getState = function() {
     return _state;
+  };
+
+  /**
+   * setShipConfig
+   * @description
+   * This is a setter for the ShipConfig File Path
+   *
+   * @param void
+   * @return Kiwi.State
+   */
+  this.setShipConfig = function(strShipConfig){
+    $this.options.ship_config = strShipConfig;
   };
 
   // Constructor Call

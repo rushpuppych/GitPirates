@@ -3,16 +3,23 @@
  * @description
  * CodePirate is a Programming learning Game for Geeks
  */
-var MissionSelectState = function(game, options) {
+var MissionSelectState = function(game, app, options) {
   var $this = this;
+  var _app = app;
   var _private = {};
   var _game = game;
   var _state = new Kiwi.State('MissionSelectState');
+  var helper = new Helper();
 
   // CodePirate System Variables
   this.options = $.extend({
     state: {},
-    music: {}
+    ship: {},
+    gui: {},
+    click: {
+      savebtn: false,
+      backbtn: false
+    }
   }, options);
 
   /**
@@ -39,9 +46,7 @@ var MissionSelectState = function(game, options) {
     _state.addImage('wood', 'app/assets/images/gui/wood.png', true, 128, 128, 0, 0);
     _state.addImage('banner_menu', 'app/assets/images/gui/banner_menu.png', true, 800, 346);
     _state.addSpriteSheet('ships', 'app/assets/images/sprites/ships.png', 76, 123);
-
-    // Load Music
-    _state.addAudio('main_theme', 'app/assets/music/main.mp3');
+    _state.addSpriteSheet('back_button', 'app/assets/images/gui/back_button.png', 204, 54);
   };
 
   /**
@@ -55,6 +60,10 @@ var MissionSelectState = function(game, options) {
    * @return void
    */
   _state.create = function() {
+    // Reset Button states
+    $this.options.click.savebtn = false;
+    $this.options.click.backbtn = false;
+
     // Create Background Image
     for(var numX = 0; numX < 8; numX++) {
       for(var numY = 0; numY < 5; numY++) {
@@ -83,13 +92,13 @@ var MissionSelectState = function(game, options) {
     objBannerMenu.y = 180;
     _state.addChild(objBannerMenu);
 
-    // Create Background music
-    var objMainThemeMusic = new Kiwi.Sound.Audio(_game, 'main_theme', 0.3, true);
-    objMainThemeMusic.play();
-    $this.options.music = objMainThemeMusic;
-
-    // GO Back Button
-
+    // Create Back Button
+    var objBackBtn = new Kiwi.GameObjects.Sprite(_state, 'back_button');
+    objBackBtn.x = 130;
+    objBackBtn.y = 540;
+    objBackBtn.animation.switchTo(2);
+    _state.addChild(objBackBtn);
+    $this.options.gui.backbtn = objBackBtn;
   };
 
   /**
@@ -103,7 +112,20 @@ var MissionSelectState = function(game, options) {
    * @return void
    */
   _state.update = function() {
+    Kiwi.State.prototype.update.call(this);
 
+    // BackBtn Handling
+    if(helper.isMouseOverElement($this.options.gui.backbtn)) {
+      $this.options.gui.backbtn.animation.switchTo(0);
+      if(helper.isMousePressed() && !$this.options.click.backbtn) {
+        $this.options.click.backbtn = true;
+        _game.huds.defaultHUD.removeAllWidgets();
+        $('#FormLayer').html("");
+        _game.states.switchState("MainMenuState");
+      }
+    } else {
+      $this.options.gui.backbtn.animation.switchTo(2);
+    }
   };
 
   /**
@@ -114,7 +136,7 @@ var MissionSelectState = function(game, options) {
    * @param void
    * @return Kiwi.State
    */
-  $this.getState = function() {
+  this.getState = function() {
     return _state;
   };
 

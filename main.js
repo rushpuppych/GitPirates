@@ -17,7 +17,7 @@ function createWindow () {
     width: 1024,
     height: 660,
     resizable: false,
-    title: "GitPirates - v1.0 - by severin.holm",
+    title: "CodePirates",
   });
 
   // and load the index.html of the app.

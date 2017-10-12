@@ -3,16 +3,17 @@
  * @description
  * CodePirate is a Programming learning Game for Geeks
  */
-var MainMenuState = function(game, options) {
+var MainMenuState = function(game, app, options) {
   var $this = this;
+  var _app = app;
   var _private = {};
   var _game = game;
   var _state = new Kiwi.State('MainMenuState');
+  var helper = new Helper();
 
   // CodePirate System Variables
   this.options = $.extend({
     state: {},
-    mouse: {x:0,y:0,isDown:false},
     ships: {
       ship_01: {name:"Empty",color:"white",lang:"---",score:"---",qualified:false},
       ship_02: {name:"Empty",color:"white",lang:"---",score:"---",qualified:false},
@@ -25,29 +26,6 @@ var MainMenuState = function(game, options) {
    * Constructor
    */
   this.init = function() {
-    // Load Ship Configurations
-    const objFs = require('fs-jetpack');
-    if(objFs.exists('ship_01.json')) {
-      $this.options.ships.ship_01 = JSON.parse(objFs.read('ship_01.json'));
-    }
-    if(objFs.exists('ship_02.json')) {
-      $this.options.ships.ship_02 = JSON.parse(objFs.read('ship_02.json'));
-    }
-    if(objFs.exists('ship_03.json')) {
-      $this.options.ships.ship_03 = JSON.parse(objFs.read('ship_03.json'));
-    }
-
-    // Native MousePosition event
-    $(document).mousemove(function(event) {
-      $this.options.mouse.x = event.pageX;
-      $this.options.mouse.y = event.pageY;
-    });
-    $(document).mousedown(function(event) {
-      $this.options.mouse.isDown = true;
-    });
-    $(document).mouseup(function(event) {
-      $this.options.mouse.isDown = false;
-    });
   };
 
   /**
@@ -69,7 +47,7 @@ var MainMenuState = function(game, options) {
     _state.addSpriteSheet('ships', 'app/assets/images/sprites/ships.png', 76, 123);
 
     // Load Music
-    _state.addAudio('main_theme', 'app/assets/music/main.mp3');
+    //_state.addAudio('main_theme', 'app/assets/music/main.mp3');
   };
 
   /**
@@ -83,6 +61,18 @@ var MainMenuState = function(game, options) {
    * @return void
    */
   _state.create = function() {
+    // Load Ship Configurations
+    const objFs = require('fs-jetpack');
+    if(objFs.exists('ship_01.json')) {
+      $this.options.ships.ship_01 = JSON.parse(objFs.read('ship_01.json'));
+    }
+    if(objFs.exists('ship_02.json')) {
+      $this.options.ships.ship_02 = JSON.parse(objFs.read('ship_02.json'));
+    }
+    if(objFs.exists('ship_03.json')) {
+      $this.options.ships.ship_03 = JSON.parse(objFs.read('ship_03.json'));
+    }
+
     // Create Background Image
     for(var numX = 0; numX < 8; numX++) {
       for(var numY = 0; numY < 5; numY++) {
@@ -125,9 +115,9 @@ var MainMenuState = function(game, options) {
     $this.options.ships.ship_03 = _private.createShip($this.options.ships.ship_03, 400);
 
     // Create Background music
-    var objMainThemeMusic = new Kiwi.Sound.Audio(_game, 'main_theme', 0.3, true);
-    objMainThemeMusic.play();
-    $this.options.music = objMainThemeMusic;
+    //var objMainThemeMusic = new Kiwi.Sound.Audio(_game, 'main_theme', 0.3, true);
+    //objMainThemeMusic.play();
+    //$this.options.music = objMainThemeMusic;
   };
 
   /**
@@ -144,9 +134,9 @@ var MainMenuState = function(game, options) {
     Kiwi.State.prototype.update.call(this);
 
     // Handle Ship Selection
-    _private.handleShipSelection(260, 240, $this.options.ships.ship_01);
-    _private.handleShipSelection(460, 240, $this.options.ships.ship_02);
-    _private.handleShipSelection(660, 240, $this.options.ships.ship_03);
+    _private.handleShipSelection(260, 240, $this.options.ships.ship_01, 'ship_01.json');
+    _private.handleShipSelection(460, 240, $this.options.ships.ship_02, 'ship_02.json');
+    _private.handleShipSelection(660, 240, $this.options.ships.ship_03, 'ship_03.json');
   };
 
   /**
@@ -218,13 +208,14 @@ var MainMenuState = function(game, options) {
    * @description
    * This Returns true if the mouse cursor is over a speciffic place
    *
-   * @param numX        The speciffic place X coordinate
-   * @param numY        The speciffic place Y coordinate
-   * @param objShip     The Ship Object
+   * @param numX            The speciffic place X coordinate
+   * @param numY            The speciffic place Y coordinate
+   * @param objShip         The Ship Object
+   * @param strConfigFile   The ConfigFile for the Ship
    * @return void
    */
-  _private.handleShipSelection = function(numX, numY, objShip) {
-    if(_private.isMouseOver(numX, numY, 130, 250)) {
+  _private.handleShipSelection = function(numX, numY, objShip, strShipConfig) {
+    if(helper.isMouseOver(numX, numY, 130, 250)) {
       objShip.objects.ship.rotation += 0.05;
       objShip.objects.name.style.color = "#000000";
       objShip.objects.lang.style.color = "#000000";
@@ -232,9 +223,10 @@ var MainMenuState = function(game, options) {
       objShip.objects.ranking.style.color = "#000000";
 
       // Load Next State
-      if(_private.isMousePressed()) {
+      if(helper.isMousePressed()) {
         if(objShip.color == 'white') {
           _game.huds.defaultHUD.removeAllWidgets();
+          _app.getState('ConfigShipState').setShipConfig(strShipConfig);
           _game.states.switchState("ConfigShipState");
         } else {
           _game.huds.defaultHUD.removeAllWidgets();
@@ -252,40 +244,6 @@ var MainMenuState = function(game, options) {
   };
 
   /**
-   * isMouseOver
-   * @description
-   * This Returns true if the mouse cursor is over a speciffic place
-   *
-   * @param numX        The speciffic place X coordinate
-   * @param numY        The speciffic place Y coordinate
-   * @param numWidth    The speciffic place width
-   * @param numHeight   The speciffic place height
-   * @return bool       True if over and False if not
-   */
-  _private.isMouseOver = function(numX, numY, numWidth, numHeight){
-    var numMouseX = $this.options.mouse.x;
-  	var numMouseY = $this.options.mouse.y;
-    if(numMouseX > numX && numMouseX < (numX + numWidth)) {
-      if(numMouseY > numY && numMouseY < (numY + numHeight)) {
-        return true;
-      }
-    }
-    return false;
-  };
-
-  /**
-   * isMousePressed
-   * @description
-   * This returns True if the MouseBtn is pressed
-   *
-   * @param void
-   * @return bool       True if over and False if not
-   */
-  _private.isMousePressed = function() {
-    return $this.options.mouse.isDown;
-  };
-
-  /**
    * getState
    * @description
    * This returns the Kiwi Engine GameState
@@ -293,7 +251,7 @@ var MainMenuState = function(game, options) {
    * @param void
    * @return Kiwi.State
    */
-  $this.getState = function() {
+  this.getState = function() {
     return _state;
   };
 

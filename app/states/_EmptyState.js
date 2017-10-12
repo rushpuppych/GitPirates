@@ -3,8 +3,9 @@
  * @description
  * CodePirate is a Programming learning Game for Geeks
  */
-var _EmptyState = function(game, options) {
+var _EmptyState = function(game, app, options) {
   var $this = this;
+  var _app = app;
   var _private = {};
   var _game = game;
   var _state = new Kiwi.State('_EmptyState');
@@ -59,6 +60,7 @@ var _EmptyState = function(game, options) {
    * @return void
    */
   _state.update = function() {
+    Kiwi.State.prototype.update.call(this);
 
   };
 
@@ -70,7 +72,7 @@ var _EmptyState = function(game, options) {
    * @param void
    * @return Kiwi.State
    */
-  $this.getState = function() {
+  this.getState = function() {
     return _state;
   };
 

@@ -21,14 +21,14 @@ var App = function(options) {
     _private.createGame();
 
     // Register States
-    _private.registerState('MainMenuState', new MainMenuState($this.options.game));
-    _private.registerState('ConfigShipState', new ConfigShipState($this.options.game));
-    _private.registerState('MissionSelectState', new MissionSelectState($this.options.game));
-    _private.registerState('PlayGameState', new PlayGameState($this.options.game));
+    _private.registerState('MainMenuState', new MainMenuState($this.options.game, $this));
+    _private.registerState('ConfigShipState', new ConfigShipState($this.options.game, $this));
+    _private.registerState('MissionSelectState', new MissionSelectState($this.options.game, $this));
+    _private.registerState('PlayGameState', new PlayGameState($this.options.game, $this));
 
     // Run Game
     _private.createStates();
-    $this.options.game.states.switchState("ConfigShipState");
+    $this.options.game.states.switchState("MainMenuState");
   };
 
   /**
@@ -80,6 +80,18 @@ var App = function(options) {
         var objState = $this.options.states[strKey];
         $this.options.game.states.addState(objState.getState());
     }
+  };
+
+  /**
+   * getState
+   * @description
+   * This is returning a speciffic State Controller
+   *
+   * @param void
+   * @return void
+   */
+  this.getState = function(strStateKey) {
+    return $this.options.states[strStateKey];
   };
 
   // Constructor Call
