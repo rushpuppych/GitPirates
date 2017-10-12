@@ -15,7 +15,11 @@ var MissionSelectState = function(game, app, options) {
   this.options = $.extend({
     state: {},
     ship: {},
-    gui: {},
+    gui: {
+      backbtn: {},
+      deletebtn: {},
+      configbtn: {}
+    },
     click: {
       savebtn: false,
       backbtn: false
@@ -47,6 +51,8 @@ var MissionSelectState = function(game, app, options) {
     _state.addImage('banner_menu', 'app/assets/images/gui/banner_menu.png', true, 800, 346);
     _state.addSpriteSheet('ships', 'app/assets/images/sprites/ships.png', 76, 123);
     _state.addSpriteSheet('back_button', 'app/assets/images/gui/back_button.png', 204, 54);
+    _state.addSpriteSheet('delete_button', 'app/assets/images/gui/delete_button.png', 204, 54);
+    _state.addSpriteSheet('config_button', 'app/assets/images/gui/config_button.png', 204, 54);
   };
 
   /**
@@ -99,6 +105,22 @@ var MissionSelectState = function(game, app, options) {
     objBackBtn.animation.switchTo(2);
     _state.addChild(objBackBtn);
     $this.options.gui.backbtn = objBackBtn;
+
+    // Create Delete Button
+    var objDeleteBtn = new Kiwi.GameObjects.Sprite(_state, 'delete_button');
+    objDeleteBtn.x = 410;
+    objDeleteBtn.y = 540;
+    objDeleteBtn.animation.switchTo(2);
+    _state.addChild(objDeleteBtn);
+    $this.options.gui.deletebtn = objDeleteBtn;
+
+    // Create Config Button
+    var objConfigBtn = new Kiwi.GameObjects.Sprite(_state, 'config_button');
+    objConfigBtn.x = 690;
+    objConfigBtn.y = 540;
+    objConfigBtn.animation.switchTo(2);
+    _state.addChild(objConfigBtn);
+    $this.options.gui.configbtn = objConfigBtn;
   };
 
   /**

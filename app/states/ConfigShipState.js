@@ -104,9 +104,17 @@ var ConfigShipState = function(game, app, options) {
     objBannerMenu.y = 180;
     _state.addChild(objBannerMenu);
 
+    // Selection Title
+    var objSelectionTitle = new Kiwi.HUD.Widget.TextField (_game, 'Configure your ship', 405, 205);
+    objSelectionTitle.style.fontFamily = "Germania One";
+    objSelectionTitle.style.fontSize = "26px";
+    objSelectionTitle.style.textAlign = "center";
+    objSelectionTitle.style.color = "#848484";
+    _game.huds.defaultHUD.addWidget(objSelectionTitle);
+
     // Create Config Form
     var strForm = '';
-    strForm += '<div style="position: absolute; top: 210px; left: 200px; height: 280px; width: 620px; font-family: Germania One;">';
+    strForm += '<div style="position: absolute; top: 250px; left: 200px; height: 280px; width: 620px; font-family: Germania One;">';
     strForm += '   <table width="100%">'
     strForm += '      <tr>';
     strForm += '         <td width="45%" valign="top">';
@@ -141,7 +149,7 @@ var ConfigShipState = function(game, app, options) {
     // Create Ship Preview
     var objShip = new Kiwi.GameObjects.Sprite(_state, 'ships');
     objShip.x = 290;
-    objShip.y = 355;
+    objShip.y = 375;
     objShip.animation.switchTo(6);
     $this.options.ship = objShip;
     _state.addChild(objShip);

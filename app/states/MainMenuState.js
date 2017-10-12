@@ -19,7 +19,10 @@ var MainMenuState = function(game, app, options) {
       ship_02: {name:"Empty",color:"white",lang:"---",score:"---",qualified:false},
       ship_03: {name:"Empty",color:"white",lang:"---",score:"---",qualified:false}
     },
-    music: {}
+    music: {},
+    gui: {
+      quitbtn: {}
+    }
   }, options);
 
   /**
@@ -45,6 +48,7 @@ var MainMenuState = function(game, app, options) {
     _state.addImage('wood', 'app/assets/images/gui/wood.png', true, 128, 128, 0, 0);
     _state.addImage('banner_menu', 'app/assets/images/gui/banner_menu.png', true, 800, 346);
     _state.addSpriteSheet('ships', 'app/assets/images/sprites/ships.png', 76, 123);
+    _state.addSpriteSheet('quit_button', 'app/assets/images/gui/quit_button.png', 204, 54);
 
     // Load Music
     //_state.addAudio('main_theme', 'app/assets/music/main.mp3');
@@ -113,6 +117,14 @@ var MainMenuState = function(game, app, options) {
     $this.options.ships.ship_01 = _private.createShip($this.options.ships.ship_01, 0);
     $this.options.ships.ship_02 = _private.createShip($this.options.ships.ship_02, 200);
     $this.options.ships.ship_03 = _private.createShip($this.options.ships.ship_03, 400);
+
+    // Create Quit Button
+    var objQuitBtn = new Kiwi.GameObjects.Sprite(_state, 'quit_button');
+    objQuitBtn.x = 410;
+    objQuitBtn.y = 540;
+    objQuitBtn.animation.switchTo(2);
+    _state.addChild(objQuitBtn);
+    $this.options.gui.quitbtn = objQuitBtn;
 
     // Create Background music
     //var objMainThemeMusic = new Kiwi.Sound.Audio(_game, 'main_theme', 0.3, true);
