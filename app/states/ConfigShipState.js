@@ -18,10 +18,7 @@ var ConfigShipState = function(game, app, options) {
     music: {},
     ship: {},
     gui: {},
-    click: {
-      savebtn: false,
-      backbtn: false
-    }
+    click: {}
   }, options);
 
   /**
@@ -73,8 +70,7 @@ var ConfigShipState = function(game, app, options) {
    */
   _state.create = function() {
     // Reset Button states
-    $this.options.click.savebtn = false;
-    $this.options.click.backbtn = false;
+    $this.resetBtn();
 
     // Create Background Image
     for(var numX = 0; numX < 8; numX++) {
@@ -256,6 +252,26 @@ var ConfigShipState = function(game, app, options) {
     } else {
       $this.options.gui.savebtn.animation.switchTo(2);
     }
+  };
+
+  /**
+   * resetBtn
+   * @description
+   * This resets the Buttons after 1sec
+   *
+   * @param void
+   * @return Kiwi.State
+   */
+  this.resetBtn = function() {
+    // Block Btn
+    $this.options.click.savebtn = true;
+    $this.options.click.backbtn = true;
+
+    // Reset Btn
+    setTimeout(function() {
+      $this.options.click.savebtn = false;
+      $this.options.click.backbtn = false;
+    }, 500);
   };
 
   /**

@@ -14,16 +14,14 @@ var MissionSelectState = function(game, app, options) {
   // CodePirate System Variables
   this.options = $.extend({
     state: {},
+    ship_config: '',
     ship: {},
     gui: {
       backbtn: {},
       deletebtn: {},
       configbtn: {}
     },
-    click: {
-      savebtn: false,
-      backbtn: false
-    }
+    click: {}
   }, options);
 
   /**
@@ -67,8 +65,7 @@ var MissionSelectState = function(game, app, options) {
    */
   _state.create = function() {
     // Reset Button states
-    $this.options.click.savebtn = false;
-    $this.options.click.backbtn = false;
+    $this.resetBtn();
 
     // Create Background Image
     for(var numX = 0; numX < 8; numX++) {
@@ -148,6 +145,66 @@ var MissionSelectState = function(game, app, options) {
     } else {
       $this.options.gui.backbtn.animation.switchTo(2);
     }
+
+    // DeleteBtn Handling
+    if(helper.isMouseOverElement($this.options.gui.deletebtn)) {
+      $this.options.gui.deletebtn.animation.switchTo(0);
+      if(helper.isMousePressed() && !$this.options.click.deletebtn) {
+        $this.options.click.deletebtn = true;
+        alert('delete');
+      }
+    } else {
+      $this.options.gui.deletebtn.animation.switchTo(2);
+    }
+
+    // ConfigBtn Handling
+    if(helper.isMouseOverElement($this.options.gui.configbtn)) {
+      $this.options.gui.configbtn.animation.switchTo(0);
+      if(helper.isMousePressed() && !$this.options.click.configbtn) {
+        $this.options.click.configbtn = true;
+        _game.huds.defaultHUD.removeAllWidgets();
+        console.log($this.options.ship_config);
+        $('#FormLayer').html("");
+        _app.getState('ConfigShipState').setShipConfig($this.options.ship_config);
+        _game.states.switchState("ConfigShipState");
+      }
+    } else {
+      $this.options.gui.configbtn.animation.switchTo(2);
+    }
+  };
+
+  /**
+   * setShipConfig
+   * @description
+   * This is a setter for the ShipConfig File Path
+   *
+   * @param void
+   * @return Kiwi.State
+   */
+  this.setShipConfig = function(strShipConfig){
+    $this.options.ship_config = strShipConfig;
+  };
+
+  /**
+   * resetBtn
+   * @description
+   * This resets the Buttons after 1sec
+   *
+   * @param void
+   * @return Kiwi.State
+   */
+  this.resetBtn = function() {
+    // Block Btn
+    $this.options.click.backbtn = true;
+    $this.options.click.deletebtn = true;
+    $this.options.click.configbtn = true;
+
+    // Reset Btn
+    setTimeout(function() {
+      $this.options.click.backbtn = false;
+      $this.options.click.deletebtn = false;
+      $this.options.click.configbtn = false;
+    }, 500);
   };
 
   /**

@@ -22,7 +22,8 @@ var MainMenuState = function(game, app, options) {
     music: {},
     gui: {
       quitbtn: {}
-    }
+    },
+    click: {}
   }, options);
 
   /**
@@ -65,6 +66,9 @@ var MainMenuState = function(game, app, options) {
    * @return void
    */
   _state.create = function() {
+    // Reset Button states
+    $this.resetBtn();
+
     // Load Ship Configurations
     const objFs = require('fs-jetpack');
     if(objFs.exists('ship_01.json')) {
@@ -149,6 +153,19 @@ var MainMenuState = function(game, app, options) {
     _private.handleShipSelection(260, 240, $this.options.ships.ship_01, 'ship_01.json');
     _private.handleShipSelection(460, 240, $this.options.ships.ship_02, 'ship_02.json');
     _private.handleShipSelection(660, 240, $this.options.ships.ship_03, 'ship_03.json');
+
+    // QuitBtn Handling
+    if(helper.isMouseOverElement($this.options.gui.quitbtn)) {
+      $this.options.gui.quitbtn.animation.switchTo(0);
+      if(helper.isMousePressed() && !$this.options.click.quitbtn) {
+        $this.options.click.quitbtn = true;
+        // Quit Application
+        const remote = require('electron').remote;
+        remote.getCurrentWindow().close();
+      }
+    } else {
+      $this.options.gui.quitbtn.animation.switchTo(2);
+    }
   };
 
   /**
@@ -242,6 +259,7 @@ var MainMenuState = function(game, app, options) {
           _game.states.switchState("ConfigShipState");
         } else {
           _game.huds.defaultHUD.removeAllWidgets();
+          _app.getState('MissionSelectState').setShipConfig(strShipConfig);
           _game.states.switchState("MissionSelectState");
         }
       }
@@ -253,6 +271,24 @@ var MainMenuState = function(game, app, options) {
       objShip.objects.score.style.color = "#848484";
       objShip.objects.ranking.style.color = "#848484";
     }
+  };
+
+  /**
+   * resetBtn
+   * @description
+   * This resets the Buttons after 1sec
+   *
+   * @param void
+   * @return Kiwi.State
+   */
+  this.resetBtn = function() {
+    // Block Btn
+    $this.options.click.quitbtn = true;
+
+    // Reset Btn
+    setTimeout(function() {
+      $this.options.click.quitbtn = false;
+    }, 500);
   };
 
   /**
