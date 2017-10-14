@@ -14,6 +14,8 @@ var ConfigShipState = function(game, app, options) {
   // CodePirate System Variables
   this.options = $.extend({
     ship_config: "",
+    score: 0,
+    qualification: false,
     state: {},
     music: {},
     ship: {},
@@ -150,6 +152,10 @@ var ConfigShipState = function(game, app, options) {
     $this.options.ship = objShip;
     _state.addChild(objShip);
 
+    // Load Config
+    _private.loadConfig($this.options.ship_config);
+    _private.changeShipColor($("#input_color").val());    
+
     // Create Back Button
     var objBackBtn = new Kiwi.GameObjects.Sprite(_state, 'back_button');
     objBackBtn.x = 130;
@@ -200,14 +206,36 @@ var ConfigShipState = function(game, app, options) {
       lang: $('#input_lang').val(),
       executable: $('#input_exec').val(),
       iofolder: $('#input_iopath').val(),
-      score: "0",
-      qualified: false
+      score: $this.options.score,
+      qualified: $this.options.qualification
     }
 
     // TODO: Validation
 
     var strShipData = JSON.stringify(objShipData);
     objFs.write($this.options.ship_config, strShipData);
+  };
+
+  /**
+   * loadConfig
+   * @description
+   * This Loads the Actual Config
+   *
+   * @param strFilePath   FilePath of the Ship Config
+   * @return void
+   */
+  _private.loadConfig = function(strFilePath) {
+    const objFs = require('fs-jetpack');
+    if(objFs.exists(strFilePath)) {
+      objShip = JSON.parse(objFs.read(strFilePath));
+      $('#input_name').val(objShip.name);
+      $('#input_color').val(objShip.color);
+      $('#input_lang').val(objShip.lang);
+      $('#input_exec').val(objShip.executable);
+      $('#input_iopath').val(objShip.iofolder);
+      $this.options.score = objShip.score;
+      $this.options.qualification = objShip.qualified;
+    }
   };
 
   /**
