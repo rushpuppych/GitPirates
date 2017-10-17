@@ -21,7 +21,11 @@ var MissionSelectState = function(game, app, options) {
       deletebtn: {},
       configbtn: {}
     },
-    click: {}
+    click: {},
+    mission:{
+      start_x: 2,
+      start_y: 2
+    }
   }, options);
 
   /**
@@ -51,6 +55,7 @@ var MissionSelectState = function(game, app, options) {
     _state.addSpriteSheet('back_button', 'app/assets/images/gui/back_button.png', 204, 54);
     _state.addSpriteSheet('delete_button', 'app/assets/images/gui/delete_button.png', 204, 54);
     _state.addSpriteSheet('config_button', 'app/assets/images/gui/config_button.png', 204, 54);
+    _state.addSpriteSheet('play_button', 'app/assets/images/gui/play_button.png', 204, 54);
   };
 
   /**
@@ -111,6 +116,14 @@ var MissionSelectState = function(game, app, options) {
     _state.addChild(objDeleteBtn);
     $this.options.gui.deletebtn = objDeleteBtn;
 
+    // Create Play Button
+    var objPlayBtn = new Kiwi.GameObjects.Sprite(_state, 'play_button');
+    objPlayBtn.x = 410;
+    objPlayBtn.y = 340;
+    objPlayBtn.animation.switchTo(2);
+    _state.addChild(objPlayBtn);
+    $this.options.gui.playbtn = objPlayBtn;
+
     // Create Config Button
     var objConfigBtn = new Kiwi.GameObjects.Sprite(_state, 'config_button');
     objConfigBtn.x = 690;
@@ -163,13 +176,27 @@ var MissionSelectState = function(game, app, options) {
       if(helper.isMousePressed() && !$this.options.click.configbtn) {
         $this.options.click.configbtn = true;
         _game.huds.defaultHUD.removeAllWidgets();
-        console.log($this.options.ship_config);
         $('#FormLayer').html("");
         _app.getState('ConfigShipState').setShipConfig($this.options.ship_config);
         _game.states.switchState("ConfigShipState");
       }
     } else {
       $this.options.gui.configbtn.animation.switchTo(2);
+    }
+
+    // PlayBtn Handling
+    if(helper.isMouseOverElement($this.options.gui.playbtn)) {
+      $this.options.gui.playbtn.animation.switchTo(0);
+      if(helper.isMousePressed() && !$this.options.click.playbtn) {
+        $this.options.click.playbtn = true;
+        _game.huds.defaultHUD.removeAllWidgets();
+        $('#FormLayer').html("");
+        _app.getState('PlayGameState').setMission($this.options.mission);
+        _app.getState('PlayGameState').setShipConfig($this.options.ship_config);
+        _game.states.switchState("PlayGameState");
+      }
+    } else {
+      $this.options.gui.playbtn.animation.switchTo(2);
     }
   };
 
@@ -198,12 +225,14 @@ var MissionSelectState = function(game, app, options) {
     $this.options.click.backbtn = true;
     $this.options.click.deletebtn = true;
     $this.options.click.configbtn = true;
+    $this.options.click.playbtn = true;
 
     // Reset Btn
     setTimeout(function() {
       $this.options.click.backbtn = false;
       $this.options.click.deletebtn = false;
       $this.options.click.configbtn = false;
+      $this.options.click.playbtn = false;
     }, 500);
   };
 

@@ -13,20 +13,24 @@ var PlayGameState = function(game, app, options) {
   // CodePirate System Variables
   this.options = $.extend({
     map: 'test',
+    ship: {},
     tilemap: {},
-    players: []
+    players: [],
+    ship_config: '',
+    mission: {},
+    game_loop: {
+      step: 'write_output',
+      init: {},
+      orders: [],
+      turn: 1,
+      blockNextStep: false
+    },
   }, options);
 
   /**
    * Constructor
    */
   this.init = function() {
-    // Create Demo Player
-    setTimeout(function() {
-      var objPlayer = new ShipGameObject(_game, _state, {tilemap: $this.options.tilemap, camera_focus: true});
-      $this.addPlayer(objPlayer);
-      runDemo(objPlayer, 0);
-    }, 5000);
   };
 
   /**
@@ -72,9 +76,17 @@ var PlayGameState = function(game, app, options) {
    * @return void
    */
   _state.create = function() {
+    // Load Ship Configuration
+    $this.getShipConfig();
+
+    // Start InitGame
+    $this.initGameLoop();
+
     // Create External GUI Components
     $('#Border').css('background-image', 'url("app/assets/images/gui/border_ingame.png")');
     $this.createTerminal();
+    $('#Minimap').html('<img src="app/data/maps/Pirates_map.png" style="position: absolute; left: 20px; top: 6px;">');
+    $('.ingame').show();
 
     // Create TileMap
     var objTileMap = new Kiwi.GameObjects.Tilemap.TileMap(_state, 'tilemap', _state.textures.tiles);
@@ -110,7 +122,7 @@ var PlayGameState = function(game, app, options) {
   };
 
   /**
-   * Add Player to Map
+   * addPlayer
    * @description
    * This is adding a Player Object to the TileMap
    *
@@ -121,7 +133,26 @@ var PlayGameState = function(game, app, options) {
     $this.options.players[objPlayer.getId()] = objPlayer;
   };
 
+  /**
+   * getPlayer
+   * @description
+   * This is adding a Player Object to the TileMap
+   *
+   * @param strId         Player UUID
+   * @return objPlayer    Player Object
+   */
+  this.getPlayer = function(strId) {
+    return $this.options.players[strId];
+  };
 
+  /**
+   * createTerminal
+   * @description
+   * This is creating the Jquery Terminal Window
+   *
+   * @param void
+   * @return void
+   */
   this.createTerminal = function() {
     var objTerminalTools = function(command, term) {
 
@@ -132,6 +163,405 @@ var PlayGameState = function(game, app, options) {
             return false;
         }
     });
+  };
+
+  /**
+   * getShipConfig
+   * @description
+   * This returns the Ship config or generates a new ship config
+   *
+   * @param void
+   * @return void
+   */
+  this.getShipConfig = function() {
+    // Return Ship Config
+    if(typeof($this.options.ship).length > 0) {
+      return $this.options.ship;
+    }
+
+    // Generate Ship Config
+    const objFs = require('fs-jetpack');
+    $this.options.ship = JSON.parse(objFs.read($this.options.ship_config));
+    var objMission = $this.options.mission;
+    $this.options.ship.pos_x = objMission.start_x;
+    $this.options.ship.pos_y = objMission.start_y;
+  };
+
+  /**
+   * setShipConfig
+   * @description
+   * This is a setter for the ShipConfig File Path
+   *
+   * @param void
+   * @return void
+   */
+  this.setShipConfig = function(strShipConfig) {
+    $this.options.ship_config = strShipConfig;
+  };
+
+  /**
+   * setMission
+   * @description
+   * This is a setter for the Mission Object
+   *
+   * @param void
+   * @return void
+   */
+  this.setMission = function(objMission) {
+    $this.options.mission = objMission;
+  };
+
+  /**
+   * getCodingJson
+   * @description
+   * This returns the Json File for the External Scripting Engine.
+   *
+   * @param void
+   * @return strJson    Json String For the File Output
+   */
+  this.getCodingJson = function() {
+    var objGeneralJson = $this.getGeneralJson();
+    var objPlayerJson = $this.getPlayerJson();
+    var objPlayersJson = $this.getPlayersJson();
+    var objMapJson = $this.getMapJson();
+
+    var objCoding = {
+      general: objGeneralJson,
+      player: objPlayerJson,
+      players: objPlayersJson,
+      map: objMapJson
+    };
+    return objCoding;
+  };
+
+  /**
+   * getGeneralJson
+   * @description
+   * This is rendering the General Json for the External Scripting Engine
+   *
+   * @param void
+   * @return strJson    Json String For the File Output
+   */
+  this.getGeneralJson = function() {
+    var objGeneralJson = {
+      turn: $this.options.game_loop.turn
+    }
+    return objGeneralJson;
+  };
+
+  /**
+   * getPlayerJson
+   * @description
+   * This is the Player Json Object
+   *
+   * @param void
+   * @return strJson    Json String For the File Output
+   */
+  $this.getPlayerJson = function() {
+      return $this.options.ship;
+  };
+
+  /**
+   * getPlayerJson
+   * @description
+   * This is the Player Json with the player informations
+   *
+   * @param void
+   * @return strJson    Json String For the File Output
+   */
+  $this.getPlayersJson = function() {
+    var objPlayers = [];
+    var strPlayerId = $this.options.ship.id;
+    for(var strId in $this.options.players) {
+      // Create New Player Config Object
+      var objPlayer = $this.options.players[strId];
+      var objPlayerObject = {
+        id: strId,
+        name: objPlayer['options']['player_name'],
+        color: objPlayer['options']['player_color'],
+        health: objPlayer['options']['health'],
+        loads: objPlayer['options']['cannon_loads'],
+        direction: objPlayer['options']['direction'],
+        pos_x: objPlayer['options']['position']['tile_x'],
+        pos_y: objPlayer['options']['position']['tile_y']
+      };
+
+      // Add Players if not Main Player
+      if(strId != strPlayerId) {
+        objPlayers.push(objPlayerObject);
+      }
+    }
+    return objPlayers;
+  };
+
+  /**
+   * getMapJson
+   * @description
+   * This is rendering the Map Json for the External Scripting Engine
+   *
+   * @param void
+   * @return strJson    Json String For the File Output
+   */
+  this.getMapJson = function() {
+    var objMapJson = {};
+    var objTileMapLayer = $this.options.tilemap.getLayer(1);
+    for(var numX = 0; numX < objTileMapLayer.width; numX++) {
+      for(var numY = 0; numY < objTileMapLayer.height; numY++) {
+        var objTileType = objTileMapLayer.getTileFromXY(numX, numY);
+        var numValue = objTileType.index;
+        if(numValue > 0) {
+          numValue = 1;
+        }
+        if(typeof(objMapJson[numX]) == 'undefined') {
+          objMapJson[numX] = [];
+        }
+        objMapJson[numX][numY] = numValue;
+      }
+    }
+    return objMapJson;
+  };
+
+  /**
+   * initGameLoop
+   * @description
+   * This is the Initialisation for The Main Game Loop
+   *
+   * @param void
+   * @return void
+   */
+  this.initGameLoop = function() {
+    setTimeout(function() {
+      // Config Player
+      var objPlayerConfig = {
+        tilemap: $this.options.tilemap,
+        camera_focus: true,
+        player_name: $this.options.ship.name,
+        player_color: $this.options.ship.color,
+        player_lang:  $this.options.ship.lang
+      };
+      var objPlayer = new ShipGameObject(_game, _state, objPlayerConfig);
+      objPlayer.setTiledPositionInTiles($this.options.ship.pos_x, $this.options.ship.pos_y);
+      $this.options.ship.id = objPlayer.options.id;
+
+      // Create Player
+      $this.addPlayer(objPlayer);
+      $this.getCodingJson();
+
+      // Create Other Players
+      // todo:
+
+      // Trigger Main Game Loop
+      $this.mainGameLoop();
+
+    }, 2000);
+  };
+
+  /**
+   * mainGameLoop
+   * @description
+   * This is the Initialisation for The Main Game Loop
+   *
+   * @param boolNextStep    If true then do next step
+   * @return void
+   */
+  this.mainGameLoop = function(boolNextStep) {
+    // Step1: Write Config
+    if($this.options.game_loop.step == 'write_output') {
+      $this.gameLoopWriteInput();
+      console.log($this.options.game_loop.turn);
+      $this.options.game_loop.step = 'trigger_script';
+      setTimeout(function() {$this.mainGameLoop();}, 1000);
+      return;
+    }
+
+    // Step2: Trigger Script
+    if($this.options.game_loop.step == 'trigger_script') {
+      $this.gameLoopTriggerScript();
+      // Recal by Trigger Script
+    }
+
+    // Step3: Read ship orders
+    if($this.options.game_loop.step == 'read_input') {
+      $this.gameLoopReadOutput();
+      $this.options.game_loop.step = 'set_order';
+      $this.mainGameLoop();
+    }
+
+    // Step4: Set Order
+    if($this.options.game_loop.step == 'set_order') {
+      // Only Recall if Next Step if active
+      if(!$this.options.game_loop.blockNextStep) {
+        $this.gameLoopSetOrder();
+      }
+
+      // When all Orders are completted then do next step
+      if($this.getLoopSetOrderStatus()) {
+        $this.options.game_loop.blockNextStep = false;
+        $this.options.game_loop.step = 'pre_events';
+        $this.mainGameLoop();
+      } else {
+        $this.options.game_loop.blockNextStep = true;
+        setTimeout(function() {$this.mainGameLoop();}, 100);
+        return;
+      }
+    }
+
+    // Step4: Calculate PreEvents
+    if($this.options.game_loop.step == 'set_order') {
+      $this.gameLoopCalcPreEvents();
+      $this.options.game_loop.step = 'pre_events';
+      $this.mainGameLoop();
+    }
+
+    // Step5: Execute PreEvents
+    if($this.options.game_loop.step == 'pre_events') {
+      $this.gameLoopSetOrder();
+      $this.options.game_loop.turn++;
+      $this.options.game_loop.step = 'write_output';
+      $this.mainGameLoop();
+    }
+    // TODO: Hier könnte mann noch einen Status für versenkt Gameover etc angeben
+  };
+
+  /**
+   * gameLoopWriteInput
+   * @description
+   * This Writes the Output Config
+   *
+   * @param void
+   * @return void
+   */
+  this.gameLoopWriteInput = function() {
+    // Get Map Configuration
+    var objMapConfig = $this.getCodingJson();
+    var strMapConfig = JSON.stringify(objMapConfig);
+
+    // Save Map Config
+    var strPath = $this.options.ship.iofolder + '/input.json';
+    const objFs = require('fs-jetpack');
+    objFs.write(strPath, strMapConfig);
+  };
+
+  /**
+   * gameLoopTriggerScript
+   * @description
+   * This is triggering the Player Ship Script
+   *
+   * @param void
+   * @return void
+   */
+  this.gameLoopTriggerScript = function() {
+    // Execute External Ship Script
+    var arrExecutable = $this.options.ship.executable.split(' ');
+    var strCmd = arrExecutable[0];
+    var strParams = arrExecutable[1];
+
+    const {spawn} = require('child_process');
+    const objExtenal = spawn(strCmd, [strParams]);
+
+    // JTerminal Console Log
+    objExtenal.stdout.on('data', (strMsg) => {
+      // todo: strMsg on Jquery Console
+    });
+
+    // JTerminal Console Error Log
+    objExtenal.stderr.on('data', (strMsg) => {
+      // todo: strMsg on Jquery Console
+    });
+
+    // On Process Close
+    objExtenal.on('close', (code) => {
+      // Recal Main Game Loop
+      $this.options.game_loop.step = 'read_input';
+      $this.mainGameLoop();
+    });
+  };
+
+  /**
+   * gameLoopReadOutput
+   * @description
+   * This is Reading the Output File
+   *
+   * @param void
+   * @return void
+   */
+  this.gameLoopReadOutput = function() {
+    const objFs = require('fs-jetpack');
+    var objOrder = JSON.parse(objFs.read($this.options.ship.iofolder + '/output.json'));
+
+    // Add Ship Orders to Order Array
+    var objOrderObj = {
+      id: $this.options.ship.id,
+      order: objOrder.order
+    };
+    var numTurn = $this.options.game_loop.turn;
+    if(typeof($this.options.game_loop.orders[numTurn]) == 'undefined') {
+      $this.options.game_loop.orders[numTurn] = [];
+    }
+    $this.options.game_loop.orders[numTurn].push(objOrderObj);
+  };
+
+  /**
+   * gameLoopCalcSetOrder
+   * @description
+   * Set The Ship Order
+   *
+   * @param void
+   * @return void
+   */
+  this.gameLoopSetOrder = function() {
+    var numTurn = $this.options.game_loop.turn;
+    var objOrders = $this.options.game_loop.orders[numTurn];
+
+    // Loop Over All Ship Turn Orders
+    for(var numIndex in objOrders) {
+      var strShipId = objOrders[numIndex]['id'];
+      var strShipOrder = objOrders[numIndex]['order'];
+
+      // Set Ship Orders
+      var objPlayer = $this.getPlayer(strShipId);
+      objPlayer.setOrder(strShipOrder);
+    };
+  };
+
+  /**
+   * getLoopSetOrderStatus
+   * @description
+   * This is evaluating the Order Status
+   *
+   * @param void
+   * @return boolFinished   Is true when all Orders are finished
+   */
+  this.getLoopSetOrderStatus = function() {
+    var numTurn = $this.options.game_loop.turn;
+    var objOrders = $this.options.game_loop.orders[numTurn];
+
+    // Loop Over All Ship Turn Orders
+    var boolFinished = true;
+    for(var numIndex in objOrders) {
+      var strShipId = objOrders[numIndex]['id'];
+      var strShipOrder = objOrders[numIndex]['order'];
+
+      // Set Ship Orders
+      var objPlayer = $this.getPlayer(strShipId);
+      var strState = objPlayer.options.status;
+      if(strState != 'idle' && strState != 'killed') {
+        boolFinished = false;
+      }
+    };
+    return boolFinished;
+  };
+
+  /**
+   * gameLoopCalcPreEvents
+   * @description
+   * Calculating the PreEvents like Damage or Get Item
+   *
+   * @param void
+   * @return void
+   */
+  this.gameLoopCalcPreEvents = function() {
+    // TODO: Calc pre Events
   };
 
   /**

@@ -18,8 +18,9 @@ var ShipGameObject = function(game, state, options) {
     direction: 'S',
     current_order: 'none',
     current_order_parameter: {},
-    player_name: 'RushPuppy',
+    player_name: 'Undefined',
     player_color: 'red',
+    script_lang: '???',
     health: 100,
     cannon_loads: 0,
     hud: {
@@ -87,7 +88,6 @@ var ShipGameObject = function(game, state, options) {
     objShip.rotation = 0;
     _state.addChild(objShip);
     $this.options.gameObject = objShip;
-    $this.setTiledPositionInTiles(2, 4)
 
     // Explode SpriteSheet
     var objExplosion = new Kiwi.GameObjects.Sprite(_state, 'explosion');
