@@ -191,6 +191,10 @@ var MissionSelectState = function(game, app, options) {
       if(helper.isMousePressed() && !$this.options.click.playbtn) {
         $this.options.click.playbtn = true;
         _game.huds.defaultHUD.removeAllWidgets();
+        // Stop MainMenu Music
+        _app.getState('MainMenuState').options.music.stop();
+
+        // Switch to PlayGameState
         $('#FormLayer').html("");
         _app.getState('PlayGameState').setMission($this.options.mission);
         _app.getState('PlayGameState').setShipConfig($this.options.ship_config);

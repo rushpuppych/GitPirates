@@ -19,7 +19,9 @@ var PlayGameState = function(game, app, options) {
     map_objects: [],
     map_width: 0,
     map_height: 0,
-    game_objects: [],
+    game_objects: {
+      coins: []
+    },
     ship_config: '',
     mission: {},
     game_loop: {
@@ -111,7 +113,7 @@ var PlayGameState = function(game, app, options) {
     objBattleThemeMusic.play();
 
     // SFX
-    var objCoinSfx = new Kiwi.Sound.Audio(_game, 'coin_sfx', 0.2, false);
+    var objCoinSfx = new Kiwi.Sound.Audio(_game, 'coin_sfx', 0.1, false);
     $this.options.sfx.coin = objCoinSfx;
 
     // Create Map Events
@@ -150,6 +152,9 @@ var PlayGameState = function(game, app, options) {
 
     // Calculate Colision with Coin
     $this.coinColider();
+
+    // Block Logic
+    $this.blocLogic();
   };
 
   /**
@@ -276,7 +281,6 @@ var PlayGameState = function(game, app, options) {
    * @return void
    */
   this.createCoins = function() {
-    var objStartPos = {};
     for(var numIndex in $this.options.map_objects) {
       var objMapObject = $this.options.map_objects[numIndex];
 
@@ -284,6 +288,7 @@ var PlayGameState = function(game, app, options) {
         var numPosX = parseInt(objMapObject.x / 64);
         var numPosY = parseInt(objMapObject.y / 64);
 
+        // Create Coin Sprite
         var objCoin = new Kiwi.GameObjects.Sprite(_state, 'coin');
         objCoin.animation.add('roate', [0, 1, 2, 3, 4, 5, 6, 7], 0.05);
         objCoin.animation.play('rotate');
@@ -292,10 +297,12 @@ var PlayGameState = function(game, app, options) {
         objCoin.scaleToHeight(32);
         objCoin.scaleToWidth(32);
         _state.addChild(objCoin);
-        $this.options.game_objects.push(objCoin);
+        $this.options.game_objects.coins.push(objCoin);
+        var numCoinId = $this.options.game_objects.coins.length - 1;
+        // Create Minimap Coins
+        $('#Minimap').append('<img class="coin_' + numCoinId + '" src="' + 'app/assets/images/sprites/coin.png' + '" style="position: absolute; left: 0px; top: 0px; width: 6px; height: 6px;">');
       }
     }
-    return objStartPos;
   };
 
   /**
@@ -308,19 +315,19 @@ var PlayGameState = function(game, app, options) {
    */
   this.coinColider = function() {
     for(var numShipIndex in $this.options.players) {
-      for(var numObjectIndex in $this.options.game_objects) {
+      for(var numObjectIndex in $this.options.game_objects.coins) {
         // Get Coin Position
-        var numCoinTileX = ($this.options.game_objects[numObjectIndex]['x'] - 24) / 64;
-        var numCoinTileY = ($this.options.game_objects[numObjectIndex]['y'] - 24) / 64;
+        var numCoinTileX = ($this.options.game_objects.coins[numObjectIndex]['x'] - 24) / 64;
+        var numCoinTileY = ($this.options.game_objects.coins[numObjectIndex]['y'] - 24) / 64;
 
         // Get Player Position
         var numShipTileX = $this.options.players[numShipIndex].options.position.tile_x;
         var numShipTileY = $this.options.players[numShipIndex].options.position.tile_y;
 
         // Colider Check
-        var objCoin = this.options.game_objects[numObjectIndex];
+        var objCoin = this.options.game_objects.coins[numObjectIndex];
         if((numCoinTileX == numShipTileX && numCoinTileY == numShipTileY) || objCoin.alpha < 1 ) {
-          this.options.game_objects[numObjectIndex].alpha -= 0.01;
+          this.options.game_objects.coins[numObjectIndex].alpha -= 0.01;
         }
 
         // Play Coin Sound
@@ -330,15 +337,92 @@ var PlayGameState = function(game, app, options) {
 
         // Coin Resize Animation on Colision
         if(objCoin.alpha < 1 && objCoin.visible) {
-          this.options.game_objects[numObjectIndex].alpha -= 0.01;
-          var numSteps = 100 - (this.options.game_objects[numObjectIndex].alpha * 100);
-          this.options.game_objects[numObjectIndex].scaleToHeight(32 + numSteps);
-          this.options.game_objects[numObjectIndex].scaleToWidth(32 + numSteps);
+          this.options.game_objects.coins[numObjectIndex].alpha -= 0.01;
+          var numSteps = 100 - (this.options.game_objects.coins[numObjectIndex].alpha * 100);
+          this.options.game_objects.coins[numObjectIndex].scaleToHeight(32 + numSteps);
+          this.options.game_objects.coins[numObjectIndex].scaleToWidth(32 + numSteps);
         }
 
         // Hide Coin Reset Colider
-        if(this.options.game_objects[numObjectIndex].alpha <= 0) {
-            this.options.game_objects[numObjectIndex].visible = false;
+        if(this.options.game_objects.coins[numObjectIndex].alpha <= 0) {
+            this.options.game_objects.coins[numObjectIndex].visible = false;
+        }
+      }
+    }
+  };
+
+  /**
+   * getCoinCounter
+   * @description
+   * This returns the actual Coin Status
+   *
+   * @param void
+   * @return objCoinCounter   This is the Object with the Coin Counts
+   */
+  this.getCoinCounter = function() {
+    var objCoinCounter = {
+      collected: 0,
+      placed: 0,
+      total: 0
+    };
+    for(var numObjectIndex in $this.options.game_objects.coins) {
+      if(this.options.game_objects.coins[numObjectIndex].visible) {
+        objCoinCounter.placed++;
+      } else {
+        objCoinCounter.collected++;
+      }
+      objCoinCounter.total++;
+    };
+    return objCoinCounter;
+  };
+
+  /**
+   * blockLogic
+   * @description
+   * This is calculating the Block Magic for Wall Opening or Closing
+   *
+   * @param void
+   * @return void
+   */
+  this.blocLogic = function() {
+    for(var numIndex in $this.options.map_objects) {
+      var objMapObject = $this.options.map_objects[numIndex];
+      if(objMapObject.name == 'BLOCK') {
+        // Get Block Tile Coordinates
+        var numStartPosX = parseInt(objMapObject.x / 64);
+        var numStartPosY = parseInt(objMapObject.y / 64);
+        var numEndPosX = parseInt((objMapObject.x + objMapObject.width) / 64);
+        var numEndPosY = parseInt((objMapObject.y + objMapObject.height) / 64);
+
+        // Get Block Type
+        var objBlockType = JSON.parse(objMapObject.type);
+
+        console.log($this.options.tilemap);
+        debugger;
+
+
+        // Coin Collection Trigger
+        if(objBlockType.trigger == 'coin') {
+          var objCoinCounter = $this.getCoinCounter();
+          if(objBlockType.value <= objCoinCounter.collected) {
+            // Open Fortification Block
+            var objTileMapLayer = $this.options.tilemap.getLayer(3);
+            for(var numX = numStartPosX; numX <= numEndPosX; numX++) {
+              for(var numY = numStartPosY; numY <= numEndPosY; numY++) {
+                var objTileType = objTileMapLayer.getTileFromXY(numX, numY);
+                // CLEAR TILE
+              }
+            }
+
+            // TODO: OPEN THE FORTIFICATION ON BLOCKADE COORDINATES
+            // TODO: ADD BLOCKADE TO MAP ARRAY AND TO SHIP STOPER Array
+            // TODO: ADD COINS TO MAP ARRAY
+          };
+        }
+
+        // Kill Trigger
+        if(objBlockType.trigger == 'kill') {
+          // TODO
         }
       }
     }
@@ -350,7 +434,7 @@ var PlayGameState = function(game, app, options) {
    * This is rendering the Minimap and setting the Player Icons
    *
    * @param void
-   * @return strJson    Json String For the File Output
+   * @return void
    */
   this.renderMinimap = function() {
     // Get Map Dimensions
@@ -360,10 +444,10 @@ var PlayGameState = function(game, app, options) {
     var numRealMapHeight = $this.options.map_height * 64;
 
     // Render Minimap Icons
-    for(var numShipIndex in $this.options.players) {
+    for(var numIndex in $this.options.players) {
       // Get Real Ship Position
-      var numShipX = $this.options.players[numShipIndex].options.position.tile_x * 64;
-      var numShipY = $this.options.players[numShipIndex].options.position.tile_y * 64;
+      var numShipX = $this.options.players[numIndex].options.position.tile_x * 64;
+      var numShipY = $this.options.players[numIndex].options.position.tile_y * 64;
 
       // Get Real Ship Percent Position
       var numShipPercentX = 100 / numRealMapWidth * numShipX;
@@ -374,11 +458,35 @@ var PlayGameState = function(game, app, options) {
       var numMinimapY = Math.round(numMinimapHeight / 100 * numShipPercentY);
 
       // Set Ship Icon
-      var strShipId = $this.options.players[numShipIndex].options.id;
-      $('img.icon_' + strShipId).css('left', numMinimapX - 3);
-      $('img.icon_' + strShipId).css('top', numMinimapY - 2);
+      var strShipId = $this.options.players[numIndex].options.id;
+      $('img.ship_' + strShipId).css('left', numMinimapX - 4);
+      $('img.ship_' + strShipId).css('top', numMinimapY - 3);
     }
 
+    // Render Objects
+    for(var numIndex in $this.options.game_objects.coins) {
+      // Get Real Object Position
+      var numObjectX = $this.options.game_objects.coins[numIndex].x;
+      var numObjectY = $this.options.game_objects.coins[numIndex].y;
+
+      // Get Real Object Percent Position
+      var numShipPercentX = 100 / numRealMapWidth * numObjectX;
+      var numShipPercentY = 100 / numRealMapHeight * numObjectY;
+
+      // Get Minimap Position by Percent
+      var numMinimapX = Math.round(numMinimapWidth / 100 * numShipPercentX);
+      var numMinimapY = Math.round(numMinimapHeight / 100 * numShipPercentY);
+
+      // Set Object Icon
+      var strType = $this.options.game_objects.coins[numIndex].name.toLowerCase();
+      $('img.' + strType + '_' + numIndex).css('left', numMinimapX - 3);
+      $('img.' + strType + '_' + numIndex).css('top', numMinimapY - 3);
+
+      // Hide Colected Coins
+      if($this.options.game_objects.coins[numIndex].visible == false) {
+        $('img.' + strType + '_' + numIndex).hide();
+      };
+    }
   };
 
   /**
@@ -515,7 +623,7 @@ var PlayGameState = function(game, app, options) {
       $this.options.ship.id = objPlayer.options.id;
 
       // Create Minimap Player
-      $('#Minimap').append('<img class="icon_' + objPlayer.options.id + '" src="' + 'app/assets/images/sprites/gold_skull.png' + '" style="position: absolute; left: 0px; top: 0px; width: 10px; height: 10px;">');
+      $('#Minimap').append('<img class="ship_' + objPlayer.options.id + '" src="' + 'app/assets/images/sprites/gold_skull.png' + '" style="position: absolute; left: 0px; top: 0px; width: 10px; height: 10px;">');
 
       // Create Player
       $this.addPlayer(objPlayer);

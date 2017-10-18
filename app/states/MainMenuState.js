@@ -52,7 +52,7 @@ var MainMenuState = function(game, app, options) {
     _state.addSpriteSheet('quit_button', 'app/assets/images/gui/quit_button.png', 204, 54);
 
     // Load Music
-    //_state.addAudio('main_theme', 'app/assets/music/main.mp3');
+    _state.addAudio('main_theme', 'app/assets/music/main.mp3');
   };
 
   /**
@@ -131,9 +131,9 @@ var MainMenuState = function(game, app, options) {
     $this.options.gui.quitbtn = objQuitBtn;
 
     // Create Background music
-    //var objMainThemeMusic = new Kiwi.Sound.Audio(_game, 'main_theme', 0.3, true);
-    //objMainThemeMusic.play();
-    //$this.options.music = objMainThemeMusic;
+    var objMainThemeMusic = new Kiwi.Sound.Audio(_game, 'main_theme', 0.3, true);
+    objMainThemeMusic.play();
+    $this.options.music = objMainThemeMusic;
   };
 
   /**
@@ -221,6 +221,7 @@ var MainMenuState = function(game, app, options) {
     if(objShipOptions.qualified) {
       strQualification = '[ Qualified ]';
     };
+    
     var objShipRanking = new Kiwi.HUD.Widget.TextField (_game, strQualification, 275 + numPosX, 460);
     objShipRanking.style.fontFamily = "Germania One";
     objShipRanking.style.fontSize = "14px";
