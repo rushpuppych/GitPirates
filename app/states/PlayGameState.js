@@ -370,7 +370,7 @@ var PlayGameState = function(game, app, options) {
       $this.gameLoopWriteInput();
       console.log($this.options.game_loop.turn);
       $this.options.game_loop.step = 'trigger_script';
-      setTimeout(function() {$this.mainGameLoop();}, 1000);
+      setTimeout(function() {$this.mainGameLoop();}, 500);
       return;
     }
 
