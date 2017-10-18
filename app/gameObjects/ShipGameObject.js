@@ -148,7 +148,7 @@ var ShipGameObject = function(game, state, options) {
     $this.options.sfx.ship_damage = objShipDamageSfx;
 
     // Create Ship Move sfx
-    var objShipMoveSfx = new Kiwi.Sound.Audio(_game, 'ship_move', 0.2, false);
+    var objShipMoveSfx = new Kiwi.Sound.Audio(_game, 'ship_move', 0.1, false);
     $this.options.sfx.ship_move = objShipMoveSfx;
 
     // Create Ship Killing

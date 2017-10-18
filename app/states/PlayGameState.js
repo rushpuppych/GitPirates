@@ -27,6 +27,9 @@ var PlayGameState = function(game, app, options) {
       turn: 1,
       blockNextStep: false
     },
+    sfx: {
+      coin: {}
+    },
     jterminal: {}
   }, options);
 
@@ -67,6 +70,9 @@ var PlayGameState = function(game, app, options) {
 
       // Load Music
       _state.addAudio('battle_theme', 'app/assets/music/battle.mp3');
+
+      // Load SFX
+      _state.addAudio('coin_sfx', 'app/assets/sfx/coin.mp3');
   };
 
   /**
@@ -101,6 +107,10 @@ var PlayGameState = function(game, app, options) {
     // Create Background music
     var objBattleThemeMusic = new Kiwi.Sound.Audio(_game, 'battle_theme', 0.3, true);
     objBattleThemeMusic.play();
+
+    // SFX
+    var objCoinSfx = new Kiwi.Sound.Audio(_game, 'coin_sfx', 0.2, false);
+    $this.options.sfx.coin = objCoinSfx;
 
     // Create Map Events
     var objMapObjects = JSON.parse(_state.data.tilemap.data).layers[5]['objects'];
@@ -303,6 +313,12 @@ var PlayGameState = function(game, app, options) {
         if((numCoinTileX == numShipTileX && numCoinTileY == numShipTileY) || objCoin.alpha < 1 ) {
           this.options.game_objects[numObjectIndex].alpha -= 0.01;
         }
+
+        // Play Coin Sound
+        if(objCoin.alpha == 0.99) {
+          $this.options.sfx.coin.play();
+        }
+
         // Coin Resize Animation on Colision
         if(objCoin.alpha < 1 && objCoin.visible) {
           this.options.game_objects[numObjectIndex].alpha -= 0.01;
