@@ -24,7 +24,8 @@ var MissionSelectState = function(game, app, options) {
     click: {},
     mission:{
       start_x: 2,
-      start_y: 2
+      start_y: 2,
+      map: 'qualification'
     }
   }, options);
 

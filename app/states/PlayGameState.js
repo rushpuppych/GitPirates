@@ -12,10 +12,12 @@ var PlayGameState = function(game, app, options) {
 
   // CodePirate System Variables
   this.options = $.extend({
-    map: 'test',
+    map: '',
     ship: {},
     tilemap: {},
     players: [],
+    map_objects: [],
+    game_objects: [],
     ship_config: '',
     mission: {},
     game_loop: {
@@ -46,7 +48,7 @@ var PlayGameState = function(game, app, options) {
    */
   _state.preload = function () {
       // Load Map and Sprites
-      _state.addJSON('tilemap', 'app/data/maps/' + $this.options.map + '.json');
+      _state.addJSON('tilemap', 'app/data/maps/' + $this.options.map + '/map.json');
       _state.addSpriteSheet('tiles', 'app/assets/images/tileset/tiles_sheet.png', 64, 64);
 
       // Load Ships and Object Sprites
@@ -55,6 +57,7 @@ var PlayGameState = function(game, app, options) {
       _state.addSpriteSheet('bullet', 'app/assets/images/sprites/bullet.png', 12, 12);
       _state.addSpriteSheet('explosion', 'app/assets/images/sprites/explosion.png', 75, 75);
       _state.addSpriteSheet('ships', 'app/assets/images/sprites/ships.png', 76, 123);
+      _state.addSpriteSheet('coin', 'app/assets/images/sprites/coins.png', 16, 16);
 
       // Load Sound Effects
       _state.addAudio('cannon_fire', 'app/assets/sfx/cannon.mp3');
@@ -80,13 +83,10 @@ var PlayGameState = function(game, app, options) {
     // Load Ship Configuration
     $this.getShipConfig();
 
-    // Start InitGame
-    $this.initGameLoop();
-
     // Create External GUI Components
     $('#Border').css('background-image', 'url("app/assets/images/gui/border_ingame.png")');
     $this.createTerminal();
-    $('#Minimap').html('<img src="app/data/maps/Pirates_map.png" style="position: absolute; left: 20px; top: 6px;">');
+    $('#Minimap').html('<img src="' + 'app/data/maps/' + $this.options.map + '/map.png' + '" style="position: absolute; left: 20px; top: 6px;">');
     $('.ingame').show();
 
     // Create TileMap
@@ -101,6 +101,14 @@ var PlayGameState = function(game, app, options) {
     // Create Background music
     var objBattleThemeMusic = new Kiwi.Sound.Audio(_game, 'battle_theme', 0.3, true);
     objBattleThemeMusic.play();
+
+    // Create Map Events
+    var objMapObjects = JSON.parse(_state.data.tilemap.data).layers[5]['objects'];
+    $this.options.map_objects = objMapObjects;
+    $this.setPlayerPosition();
+
+    // Start InitGame
+    $this.initGameLoop();
   };
 
   /**
@@ -120,6 +128,9 @@ var PlayGameState = function(game, app, options) {
     for(var strId in $this.options.players) {
       var objPlayer = $this.options.players[strId].executeOrderOnUpdate();
     }
+
+    // Calculate Colision with Coin
+    $this.coinColider();
   };
 
   /**
@@ -211,6 +222,101 @@ var PlayGameState = function(game, app, options) {
    */
   this.setMission = function(objMission) {
     $this.options.mission = objMission;
+    $this.options.map = objMission.map;
+  };
+
+  /**
+   * setPlayerPosition
+   * @description
+   * This is setting the Players Position given by the map
+   *
+   * @param void
+   * @return void
+   */
+  this.setPlayerPosition = function() {
+    var objStartPos = {};
+    for(var numIndex in $this.options.map_objects) {
+      var objMapObject = $this.options.map_objects[numIndex];
+
+      if(objMapObject.name == 'START') {
+        var numPosX = parseInt(objMapObject.x / 64);
+        var numPosY = parseInt(objMapObject.y / 64);
+        $this.options.ship.pos_x = numPosX;
+        $this.options.ship.pos_y = numPosY;
+      }
+    }
+    return objStartPos;
+  };
+
+  /**
+   * createCoins
+   * @description
+   * This renders the Coins to the map
+   *
+   * @param void
+   * @return void
+   */
+  this.createCoins = function() {
+    var objStartPos = {};
+    for(var numIndex in $this.options.map_objects) {
+      var objMapObject = $this.options.map_objects[numIndex];
+
+      if(objMapObject.name == 'COIN') {
+        var numPosX = parseInt(objMapObject.x / 64);
+        var numPosY = parseInt(objMapObject.y / 64);
+
+        var objCoin = new Kiwi.GameObjects.Sprite(_state, 'coin');
+        objCoin.animation.add('roate', [0, 1, 2, 3, 4, 5, 6, 7], 0.05);
+        objCoin.animation.play('rotate');
+        objCoin.x = (numPosX * 64) + 24;
+        objCoin.y = (numPosY * 64) + 24;
+        objCoin.scaleToHeight(32);
+        objCoin.scaleToWidth(32);
+        _state.addChild(objCoin);
+        $this.options.game_objects.push(objCoin);
+      }
+    }
+    return objStartPos;
+  };
+
+  /**
+   * coinColider
+   * @description
+   * This is calculating if a ship colides with a coin
+   *
+   * @param void
+   * @return void
+   */
+  this.coinColider = function() {
+    for(var numShipIndex in $this.options.players) {
+      for(var numObjectIndex in $this.options.game_objects) {
+        // Get Coin Position
+        var numCoinTileX = ($this.options.game_objects[numObjectIndex]['x'] - 24) / 64;
+        var numCoinTileY = ($this.options.game_objects[numObjectIndex]['y'] - 24) / 64;
+
+        // Get Player Position
+        var numShipTileX = $this.options.players[numShipIndex].options.position.tile_x;
+        var numShipTileY = $this.options.players[numShipIndex].options.position.tile_y;
+
+        // Colider Check
+        var objCoin = this.options.game_objects[numObjectIndex];
+        if((numCoinTileX == numShipTileX && numCoinTileY == numShipTileY) || objCoin.alpha < 1 ) {
+          this.options.game_objects[numObjectIndex].alpha -= 0.01;
+        }
+        // Coin Resize Animation on Colision
+        if(objCoin.alpha < 1 && objCoin.visible) {
+          this.options.game_objects[numObjectIndex].alpha -= 0.01;
+          var numSteps = 100 - (this.options.game_objects[numObjectIndex].alpha * 100);
+          this.options.game_objects[numObjectIndex].scaleToHeight(32 + numSteps);
+          this.options.game_objects[numObjectIndex].scaleToWidth(32 + numSteps);
+        }
+
+        // Hide Coin Reset Colider
+        if(this.options.game_objects[numObjectIndex].alpha <= 0) {
+            this.options.game_objects[numObjectIndex].visible = false;
+        }
+      }
+    }
   };
 
   /**
@@ -351,6 +457,9 @@ var PlayGameState = function(game, app, options) {
 
       // Create Other Players
       // todo:
+
+      // Create Coins
+      $this.createCoins();
 
       // Trigger Main Game Loop
       $this.mainGameLoop();
@@ -527,9 +636,17 @@ var PlayGameState = function(game, app, options) {
       var strShipId = objOrders[numIndex]['id'];
       var strShipOrder = objOrders[numIndex]['order'];
 
+      // Extract Parameters
+      objParam = {};
+      if(strShipOrder.indexOf(':') > 0) {
+        var strParamJson = strShipOrder.substring(strShipOrder.indexOf(':') + 1);
+        var strShipOrder = strShipOrder.substring(0, strShipOrder.indexOf(':'));
+        objParam = JSON.parse(strParamJson);
+      }
+
       // Set Ship Orders
       var objPlayer = $this.getPlayer(strShipId);
-      objPlayer.setOrder(strShipOrder);
+      objPlayer.setOrder(strShipOrder, objParam);
     };
   };
 
