@@ -17,6 +17,8 @@ var PlayGameState = function(game, app, options) {
     tilemap: {},
     players: [],
     map_objects: [],
+    map_width: 0,
+    map_height: 0,
     game_objects: [],
     ship_config: '',
     mission: {},
@@ -92,7 +94,7 @@ var PlayGameState = function(game, app, options) {
     // Create External GUI Components
     $('#Border').css('background-image', 'url("app/assets/images/gui/border_ingame.png")');
     $this.createTerminal();
-    $('#Minimap').html('<img src="' + 'app/data/maps/' + $this.options.map + '/map.png' + '" style="position: absolute; left: 20px; top: 6px;">');
+    $('#Minimap').html('<img src="' + 'app/data/maps/' + $this.options.map + '/map.png' + '" style="position: absolute; left: 0px; top: 0px;">');
     $('.ingame').show();
 
     // Create TileMap
@@ -113,9 +115,13 @@ var PlayGameState = function(game, app, options) {
     $this.options.sfx.coin = objCoinSfx;
 
     // Create Map Events
-    var objMapObjects = JSON.parse(_state.data.tilemap.data).layers[5]['objects'];
-    $this.options.map_objects = objMapObjects;
+    var objMap = JSON.parse(_state.data.tilemap.data);
+    $this.options.map_objects = objMap.layers[5]['objects'];
     $this.setPlayerPosition();
+
+    // Set Map Positions
+    $this.options.map_height = objMap.height;
+    $this.options.map_width = objMap.width;
 
     // Start InitGame
     $this.initGameLoop();
@@ -138,6 +144,9 @@ var PlayGameState = function(game, app, options) {
     for(var strId in $this.options.players) {
       var objPlayer = $this.options.players[strId].executeOrderOnUpdate();
     }
+
+    // Calculate Minimap Icons
+    $this.renderMinimap();
 
     // Calculate Colision with Coin
     $this.coinColider();
@@ -251,8 +260,8 @@ var PlayGameState = function(game, app, options) {
       if(objMapObject.name == 'START') {
         var numPosX = parseInt(objMapObject.x / 64);
         var numPosY = parseInt(objMapObject.y / 64);
-        $this.options.ship.pos_x = numPosX;
-        $this.options.ship.pos_y = numPosY;
+        $this.options.ship.pos_x = numPosX + 1;
+        $this.options.ship.pos_y = numPosY + 1;
       }
     }
     return objStartPos;
@@ -336,6 +345,43 @@ var PlayGameState = function(game, app, options) {
   };
 
   /**
+   * renderMinimap
+   * @description
+   * This is rendering the Minimap and setting the Player Icons
+   *
+   * @param void
+   * @return strJson    Json String For the File Output
+   */
+  this.renderMinimap = function() {
+    // Get Map Dimensions
+    var numMinimapWidth = $('#Minimap img').width();
+    var numMinimapHeight = $('#Minimap img').height();
+    var numRealMapWidth = $this.options.map_width * 64;
+    var numRealMapHeight = $this.options.map_height * 64;
+
+    // Render Minimap Icons
+    for(var numShipIndex in $this.options.players) {
+      // Get Real Ship Position
+      var numShipX = $this.options.players[numShipIndex].options.position.tile_x * 64;
+      var numShipY = $this.options.players[numShipIndex].options.position.tile_y * 64;
+
+      // Get Real Ship Percent Position
+      var numShipPercentX = 100 / numRealMapWidth * numShipX;
+      var numShipPercentY = 100 / numRealMapHeight * numShipY;
+
+      // Get Minimap Position by Percent
+      var numMinimapX = Math.round(numMinimapWidth / 100 * numShipPercentX);
+      var numMinimapY = Math.round(numMinimapHeight / 100 * numShipPercentY);
+
+      // Set Ship Icon
+      var strShipId = $this.options.players[numShipIndex].options.id;
+      $('img.icon_' + strShipId).css('left', numMinimapX - 3);
+      $('img.icon_' + strShipId).css('top', numMinimapY - 2);
+    }
+
+  };
+
+  /**
    * getCodingJson
    * @description
    * This returns the Json File for the External Scripting Engine.
@@ -347,6 +393,7 @@ var PlayGameState = function(game, app, options) {
     var objGeneralJson = $this.getGeneralJson();
     var objPlayerJson = $this.getPlayerJson();
     var objPlayersJson = $this.getPlayersJson();
+    // TODO: Specials like coins etc.
     var objMapJson = $this.getMapJson();
 
     var objCoding = {
@@ -466,6 +513,9 @@ var PlayGameState = function(game, app, options) {
       var objPlayer = new ShipGameObject(_game, _state, objPlayerConfig);
       objPlayer.setTiledPositionInTiles($this.options.ship.pos_x, $this.options.ship.pos_y);
       $this.options.ship.id = objPlayer.options.id;
+
+      // Create Minimap Player
+      $('#Minimap').append('<img class="icon_' + objPlayer.options.id + '" src="' + 'app/assets/images/sprites/gold_skull.png' + '" style="position: absolute; left: 0px; top: 0px; width: 10px; height: 10px;">');
 
       // Create Player
       $this.addPlayer(objPlayer);
