@@ -19,12 +19,13 @@ var PlayGameState = function(game, app, options) {
     ship_config: '',
     mission: {},
     game_loop: {
-      step: 'write_output',
+      step: 'write_input',
       init: {},
       orders: [],
       turn: 1,
       blockNextStep: false
     },
+    jterminal: {}
   }, options);
 
   /**
@@ -157,12 +158,13 @@ var PlayGameState = function(game, app, options) {
     var objTerminalTools = function(command, term) {
 
     };
-    $('#JTerminal').terminal(objTerminalTools, {
+    var objJTerminal = $('#JTerminal').terminal(objTerminalTools, {
         greetings: 'GitPirates: 1.0 - Terminal',
         onBlur: function() {
             return false;
         }
     });
+    $this.options.jterminal = objJTerminal;
   };
 
   /**
@@ -361,14 +363,13 @@ var PlayGameState = function(game, app, options) {
    * @description
    * This is the Initialisation for The Main Game Loop
    *
-   * @param boolNextStep    If true then do next step
+   * @param void
    * @return void
    */
-  this.mainGameLoop = function(boolNextStep) {
+  this.mainGameLoop = function() {
     // Step1: Write Config
-    if($this.options.game_loop.step == 'write_output') {
+    if($this.options.game_loop.step == 'write_input') {
       $this.gameLoopWriteInput();
-      console.log($this.options.game_loop.turn);
       $this.options.game_loop.step = 'trigger_script';
       setTimeout(function() {$this.mainGameLoop();}, 500);
       return;
@@ -381,10 +382,11 @@ var PlayGameState = function(game, app, options) {
     }
 
     // Step3: Read ship orders
-    if($this.options.game_loop.step == 'read_input') {
+    if($this.options.game_loop.step == 'read_output') {
       $this.gameLoopReadOutput();
       $this.options.game_loop.step = 'set_order';
       $this.mainGameLoop();
+      return;
     }
 
     // Step4: Set Order
@@ -397,28 +399,33 @@ var PlayGameState = function(game, app, options) {
       // When all Orders are completted then do next step
       if($this.getLoopSetOrderStatus()) {
         $this.options.game_loop.blockNextStep = false;
-        $this.options.game_loop.step = 'pre_events';
+        $this.options.game_loop.step = 'calc_pre_events';
         $this.mainGameLoop();
+        return;
       } else {
+        // Recall
         $this.options.game_loop.blockNextStep = true;
+        $this.options.game_loop.step = 'set_order';
         setTimeout(function() {$this.mainGameLoop();}, 100);
         return;
       }
     }
 
     // Step4: Calculate PreEvents
-    if($this.options.game_loop.step == 'set_order') {
+    if($this.options.game_loop.step == 'calc_pre_events') {
       $this.gameLoopCalcPreEvents();
       $this.options.game_loop.step = 'pre_events';
       $this.mainGameLoop();
+      return;
     }
 
     // Step5: Execute PreEvents
     if($this.options.game_loop.step == 'pre_events') {
       $this.gameLoopSetOrder();
       $this.options.game_loop.turn++;
-      $this.options.game_loop.step = 'write_output';
+      $this.options.game_loop.step = 'write_input';
       $this.mainGameLoop();
+      return;
     }
     // TODO: Hier könnte mann noch einen Status für versenkt Gameover etc angeben
   };
@@ -461,18 +468,20 @@ var PlayGameState = function(game, app, options) {
 
     // JTerminal Console Log
     objExtenal.stdout.on('data', (strMsg) => {
-      // todo: strMsg on Jquery Console
+      // TODO: color lightblue
+      $this.options.jterminal.echo(strMsg);
     });
 
     // JTerminal Console Error Log
     objExtenal.stderr.on('data', (strMsg) => {
-      // todo: strMsg on Jquery Console
+      // TODO: Color Red
+      $this.options.jterminal.echo(strMsg);
     });
 
     // On Process Close
     objExtenal.on('close', (code) => {
       // Recal Main Game Loop
-      $this.options.game_loop.step = 'read_input';
+      $this.options.game_loop.step = 'read_output';
       $this.mainGameLoop();
     });
   };
