@@ -396,33 +396,34 @@ var PlayGameState = function(game, app, options) {
 
         // Get Block Type
         var objBlockType = JSON.parse(objMapObject.type);
-
-        console.log($this.options.tilemap);
-        debugger;
-
+        var boolNoBlock = false;
 
         // Coin Collection Trigger
         if(objBlockType.trigger == 'coin') {
           var objCoinCounter = $this.getCoinCounter();
           if(objBlockType.value <= objCoinCounter.collected) {
-            // Open Fortification Block
-            var objTileMapLayer = $this.options.tilemap.getLayer(3);
-            for(var numX = numStartPosX; numX <= numEndPosX; numX++) {
-              for(var numY = numStartPosY; numY <= numEndPosY; numY++) {
-                var objTileType = objTileMapLayer.getTileFromXY(numX, numY);
-                // CLEAR TILE
-              }
-            }
-
-            // TODO: OPEN THE FORTIFICATION ON BLOCKADE COORDINATES
-            // TODO: ADD BLOCKADE TO MAP ARRAY AND TO SHIP STOPER Array
-            // TODO: ADD COINS TO MAP ARRAY
+            boolNoBlock = true;
           };
         }
 
         // Kill Trigger
         if(objBlockType.trigger == 'kill') {
           // TODO
+        }
+
+        // Open Fortification Block
+        if(boolNoBlock) {
+          var objTileMapLayer = $this.options.tilemap.getLayer(3);
+          for(var numX = numStartPosX; numX <= numEndPosX; numX++) {
+            for(var numY = numStartPosY; numY <= numEndPosY; numY++) {
+              var objTileType = objTileMapLayer.getTileFromXY(numX, numY);
+              if(objTileType.cellIndex != -1) {
+                objTileType.cellIndex = -1;
+                objTileType.index = 0;
+                // TODO: Play Magic Sound
+              }
+            }
+          }
         }
       }
     }
@@ -588,6 +589,13 @@ var PlayGameState = function(game, app, options) {
       for(var numY = 0; numY < objTileMapLayer.height; numY++) {
         var objTileType = objTileMapLayer.getTileFromXY(numX, numY);
         var numValue = objTileType.index;
+
+        // Add Fortification
+        var objFortMapLayer = $this.options.tilemap.getLayer(3);
+        var objFortTile = objFortMapLayer.getTileFromXY(numX, numY);
+        numValue += objFortTile.index;
+
+        // Calculate Map Array
         if(numValue > 0) {
           numValue = 1;
         }

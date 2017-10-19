@@ -483,10 +483,16 @@ var ShipGameObject = function(game, state, options) {
   _private.checkKickBack = function() {
     $this.recalcTiledPosition();
     var objTiledPosition = $this.getTiledPosition();
+    // LightWater Layer
     var objTileMapLayer = $this.options.tilemap.getLayer(1);
     var objTileType = objTileMapLayer.getTileFromXY(objTiledPosition.tile_x, objTiledPosition.tile_y);
+
+    // Fortification Layer
+    var objFortMapLayer = $this.options.tilemap.getLayer(3);
+    var objFortTile = objFortMapLayer.getTileFromXY(objTiledPosition.tile_x, objTiledPosition.tile_y);
+
     // Check Colision with LightWater
-    if(objTileType.index > 0) {
+    if(objTileType.index > 0 || objFortTile.index > 0) {
       $this.options.kickback = true;
       $this.options.health -= 25;
     }
