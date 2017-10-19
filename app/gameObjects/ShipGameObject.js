@@ -969,14 +969,15 @@ var ShipGameObject = function(game, state, options) {
     var objShip = $this.getGameOject();
 
     // Render Camera Position
-    var numTransformX = objShip.x;
-    var numTransformY = objShip.y;
+    var numTransformX = -1 * objShip.x + 640 * 0.5 - objShip.width / 2;
+    var numTransformY = -1 * objShip.y + 640 * 0.5 - objShip.height / 2;
     if($this.options.camera_focus) {
-      numTransformX = -1 * objShip.x + 640 * 0.5 - objShip.width / 2;
-      numTransformY = -1 * objShip.y + 640 * 0.5 - objShip.height / 2;
       _game.cameras.defaultCamera.transform.x = numTransformX;
     	_game.cameras.defaultCamera.transform.y = numTransformY;
-    };
+    } else {
+      numTransformX = _game.cameras.defaultCamera.transform.x;
+      numTransformY = _game.cameras.defaultCamera.transform.y;
+    }
 
     // Render Player Name
     $this.options.hud.playerText.x = objShip.x + numTransformX - 1;

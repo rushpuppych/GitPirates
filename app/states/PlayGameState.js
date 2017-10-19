@@ -273,6 +273,44 @@ var PlayGameState = function(game, app, options) {
   };
 
   /**
+   * createPlayer
+   * @description
+   * This is creating a Player
+   *
+   * @param boolFocus   One Player can be focused by the camera
+   * @param boolScript  This is the Local Scripted Player
+   * @param strName     Player Name
+   * @param strColor    Ship Color
+   * @param strLang     Coding Language
+   * @param numPosX     Position X in tiles
+   * @param numPosY     Position Y in tiles
+   * @param numHealth   Ship Start Health 0 - 100
+   * @return void
+   */
+  this.createPlayer = function(boolFocus, boolScript, strName, strColor, strLang, numPosX, numPosY, numHealth) {
+    var objPlayerConfig = {
+      tilemap: $this.options.tilemap,
+      camera_focus: boolFocus,
+      player_name: strName,
+      player_color: strColor,
+      player_lang:  'NPC',
+      health: numHealth
+    };
+    var objPlayer = new ShipGameObject(_game, _state, objPlayerConfig);
+    objPlayer.setTiledPositionInTiles(numPosX, numPosY);
+    if(boolScript) {
+      $this.options.ship.id = objPlayer.options.id;
+    }
+
+    // Create Minimap Player
+    objPlayer.recalcTiledPosition();
+    $('#Minimap').append('<img class="ship_' + objPlayer.options.id + '" src="' + 'app/assets/images/sprites/gold_skull.png' + '" style="position: absolute; left: 0px; top: 0px; width: 10px; height: 10px;">');
+
+    // Create Player
+    $this.addPlayer(objPlayer);
+  };
+
+  /**
    * createCoins
    * @description
    * This renders the Coins to the map
@@ -502,13 +540,14 @@ var PlayGameState = function(game, app, options) {
     var objGeneralJson = $this.getGeneralJson();
     var objPlayerJson = $this.getPlayerJson();
     var objPlayersJson = $this.getPlayersJson();
-    // TODO: Specials like coins etc.
+    var objSpecial = $this.getSpecials();
     var objMapJson = $this.getMapJson();
 
     var objCoding = {
       general: objGeneralJson,
       player: objPlayerJson,
       players: objPlayersJson,
+      specials: objSpecial,
       map: objMapJson
     };
     return objCoding;
@@ -575,6 +614,45 @@ var PlayGameState = function(game, app, options) {
   };
 
   /**
+   * getSpecials
+   * @description
+   * This is rendering the Map Json for the External Scripting Engine
+   *
+   * @param void
+   * @return objSpecials    This Array Contains the Special Objects
+   */
+  this.getSpecials = function() {
+    // Prepare Specials Object
+    var arrSpecials = {
+      coin: [],
+      block: [],
+      enemy: [],
+      start: [],
+      end: []
+    };
+
+    // Create Specials Object
+    for(var numIndex in $this.options.map_objects) {
+      var objGameObject = $this.options.map_objects[numIndex];
+      // Parse Param Object
+      var objParam = {};
+      if(objGameObject.type.length > 0) {
+        objParam = JSON.parse(objGameObject.type);
+      }
+
+      // Create Special
+      var objSpecial = {
+        params: objParam,
+        pos_x: parseInt(objGameObject.x / 64),
+        pos_y: parseInt(objGameObject.y / 64)
+      }
+      var strName = objGameObject.name.toLowerCase();
+      arrSpecials[strName].push(objSpecial);
+    }
+    return arrSpecials;
+  };
+
+  /**
    * getMapJson
    * @description
    * This is rendering the Map Json for the External Scripting Engine
@@ -618,27 +696,23 @@ var PlayGameState = function(game, app, options) {
    */
   this.initGameLoop = function() {
     setTimeout(function() {
-      // Config Player
-      var objPlayerConfig = {
-        tilemap: $this.options.tilemap,
-        camera_focus: true,
-        player_name: $this.options.ship.name,
-        player_color: $this.options.ship.color,
-        player_lang:  $this.options.ship.lang
-      };
-      var objPlayer = new ShipGameObject(_game, _state, objPlayerConfig);
-      objPlayer.setTiledPositionInTiles($this.options.ship.pos_x, $this.options.ship.pos_y);
-      $this.options.ship.id = objPlayer.options.id;
-
-      // Create Minimap Player
-      $('#Minimap').append('<img class="ship_' + objPlayer.options.id + '" src="' + 'app/assets/images/sprites/gold_skull.png' + '" style="position: absolute; left: 0px; top: 0px; width: 10px; height: 10px;">');
-
-      // Create Player
-      $this.addPlayer(objPlayer);
-      $this.getCodingJson();
+      // Create NPC Players
+      var objSpecials = $this.getSpecials();
+      for(var numIndex in objSpecials.enemy) {
+        var objEnemy = objSpecials.enemy[numIndex];
+        //$this.createPlayer(true, false, objEnemy.params.name, objEnemy.params.color, 'NPC', objEnemy.pos_x + 1, objEnemy.pos_y + 1, objEnemy.params.health);
+        $this.createPlayer(true, false, objEnemy.params.name, objEnemy.params.color, 'NPC', 19, 26, objEnemy.params.health);
+      }
 
       // Create Other Players
       // todo:
+
+      // Create Player
+      var objPlayer = $this.options.ship;
+      $this.createPlayer(false, true, objPlayer.name, objPlayer.color, objPlayer.lang, objPlayer.pos_x, objPlayer.pos_y, 100);
+
+      // Get Coding JSON
+      $this.getCodingJson();
 
       // Create Coins
       $this.createCoins();
