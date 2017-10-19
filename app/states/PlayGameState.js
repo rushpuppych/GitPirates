@@ -764,7 +764,7 @@ var PlayGameState = function(game, app, options) {
       // When all Orders are completted then do next step
       if($this.getLoopSetOrderStatus()) {
         $this.options.game_loop.blockNextStep = false;
-        $this.options.game_loop.step = 'calc_pre_events';
+        $this.options.game_loop.step = 'calc_post_events';
         $this.mainGameLoop();
         return;
       } else {
@@ -776,17 +776,17 @@ var PlayGameState = function(game, app, options) {
       }
     }
 
-    // Step4: Calculate PreEvents
-    if($this.options.game_loop.step == 'calc_pre_events') {
-      $this.gameLoopCalcPreEvents();
-      $this.options.game_loop.step = 'pre_events';
+    // Step4: Calculate PostEvents
+    if($this.options.game_loop.step == 'calc_post_events') {
+      $this.gameLoopCalcPostEvents();
+      $this.options.game_loop.step = 'post_events';
       $this.mainGameLoop();
       return;
     }
 
-    // Step5: Execute PreEvents
-    if($this.options.game_loop.step == 'pre_events') {
-      $this.gameLoopSetOrder();
+    // Step5: Execute PostEvents
+    if($this.options.game_loop.step == 'post_events') {
+      $this.gameLoopSetOrder('Post');
       $this.options.game_loop.turn++;
       $this.options.game_loop.step = 'write_input';
       $this.mainGameLoop();
@@ -880,12 +880,19 @@ var PlayGameState = function(game, app, options) {
    * @description
    * Set The Ship Order
    *
-   * @param void
+   * @param strSuffix   This is the Turn Suffix
    * @return void
    */
-  this.gameLoopSetOrder = function() {
+  this.gameLoopSetOrder = function(strSuffix) {
+    // Set Suffix
+    if(typeof(strSuffix) == 'undefined') {
+      strSuffix = '';
+    } else {
+      strSuffix = '_' + strSuffix;
+    }
+
     var numTurn = $this.options.game_loop.turn;
-    var objOrders = $this.options.game_loop.orders[numTurn];
+    var objOrders = $this.options.game_loop.orders[numTurn + strSuffix];
 
     // Loop Over All Ship Turn Orders
     for(var numIndex in objOrders) {
@@ -935,15 +942,92 @@ var PlayGameState = function(game, app, options) {
   };
 
   /**
-   * gameLoopCalcPreEvents
+   * gameLoopCalcPostEvents
    * @description
-   * Calculating the PreEvents like Damage or Get Item
+   * Calculating the PostEvents like Damage or Get Item
    *
    * @param void
    * @return void
    */
-  this.gameLoopCalcPreEvents = function() {
-    // TODO: Calc pre Events
+  this.gameLoopCalcPostEvents = function() {
+    // Create Post Order Array
+    var numTurn = $this.options.game_loop.turn;
+    $this.options.game_loop.orders[numTurn + '_Post'] = [];
+
+    // Calculate Hits
+    var arrPlayerPos = $this.getPlayerTilePositions();
+
+    // Get CannonHit Positions
+    var arrCannonHits = $this.getCannonHitPositions();
+    // Calculate Hits
+    for(var numCannonIndex in arrCannonHits) {
+      var objCannon = arrCannonHits[numCannonIndex];
+
+      for(var numPlayerIndex in arrPlayerPos) {
+        var objPlayer = arrPlayerPos[numPlayerIndex];
+
+        // Check if its a HIT
+        if(objPlayer['tile_x'] == objCannon['tile_x'] && objPlayer['tile_y'] == objCannon['tile_y']) {
+          var objOrderObj = {
+            id: objPlayer['id'],
+            order: 'SHIP_DAMAGE:{"dmg": 10}'
+          };
+          $this.options.game_loop.orders[numTurn + '_Post'].push(objOrderObj);
+          // TODO: GUI MESSAGE WITH HIT OR KILL INFO
+          //console.log(objCannon.shooter, "IS HITING", objPlayer['id']);
+        }
+      }
+    }
+  };
+
+  /**
+   * getPlayerTilePositions
+   * @description
+   * Get Player Tile Position
+   *
+   * @param void
+   * @return objPlayerTilePosition  This is the Player Position Array
+   */
+  this.getPlayerTilePositions = function() {
+    var objPlayerTilePosition = [];
+    for(var strId in $this.options.players) {
+      var objPlayer = {
+        id: $this.options.players[strId]['options']['id'],
+        tile_x: $this.options.players[strId]['options']['position']['tile_x'],
+        tile_y: $this.options.players[strId]['options']['position']['tile_y']
+      };
+      objPlayerTilePosition.push(objPlayer);
+    }
+    return objPlayerTilePosition;
+  };
+
+  /**
+   * getCannonHitPositions
+   * @description
+   * Get Cannon hit Positions
+   *
+   * @param void
+   * @return objCannonHitPosition  This is the Cannon Hit Position Array
+   */
+  this.getCannonHitPositions = function() {
+    var objCannonHitPosition = [];
+    for(var strId in $this.options.players) {
+      var objPlayer = $this.options.players[strId];
+      var objFired = objPlayer.options.cannon_fire;
+      if(objFired.fired) {
+        // Get Hit
+        var objCannonHit = {
+          shooter: $this.options.players[strId]['options']['id'],
+          tile_x: objFired.pos_x,
+          tile_y: objFired.pos_y
+        };
+        objCannonHitPosition.push(objCannonHit);
+      }
+
+      // Reset Player Hit Calculation
+      objPlayer.resetHitCalculation();
+    }
+    return objCannonHitPosition;
   };
 
   /**

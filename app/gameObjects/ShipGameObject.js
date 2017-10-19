@@ -56,6 +56,11 @@ var ShipGameObject = function(game, state, options) {
       ship_move: {},
       ship_kill: {}
     },
+    cannon_fire: {
+      fired: false,
+      pos_x: 0,
+      pos_y: 0
+    },
     gameObject: {},
     smoke: {},
     bullet: {},
@@ -700,9 +705,30 @@ var ShipGameObject = function(game, state, options) {
 
     // Finnish Conndition
     if($this.checkAnimationSteps('fireCannon', 100, 100)) {
+      // Set hit Calculation Object
+      if($this.options.bullet.visible) {
+        $this.options.cannon_fire.fired = true;
+        $this.options.cannon_fire.pos_x = parseInt($this.options.bullet.x / 64);
+        $this.options.cannon_fire.pos_y = parseInt($this.options.bullet.y / 64);
+      }
+
       $this.options.bullet.visible = false;
       $this.options.status = 'finish';
     }
+  };
+
+  /**
+   * resetHitCalculation
+   * @description
+   * This is reseting the Hit Calculation Object
+   *
+   * @param void
+   * @return void
+   */
+  this.resetHitCalculation = function() {
+    $this.options.cannon_fire.fired = false;
+    $this.options.cannon_fire.pos_x = 0;
+    $this.options.cannon_fire.pos_y = 0;
   };
 
   /**
