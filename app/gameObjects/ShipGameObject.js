@@ -281,6 +281,7 @@ var ShipGameObject = function(game, state, options) {
 
     // Set Order if state is ready for new orders
     if($this.options.current_order == 'none' && $this.options.status == 'idle') {
+      $this.options.status = 'waiting';
       $this.options.current_order = strOrder;
       if(typeof(objParameter) != 'undefined') {
         $this.options.current_order_parameter = objParameter;

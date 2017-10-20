@@ -700,8 +700,8 @@ var PlayGameState = function(game, app, options) {
       var objSpecials = $this.getSpecials();
       for(var numIndex in objSpecials.enemy) {
         var objEnemy = objSpecials.enemy[numIndex];
-        //$this.createPlayer(true, false, objEnemy.params.name, objEnemy.params.color, 'NPC', objEnemy.pos_x + 1, objEnemy.pos_y + 1, objEnemy.params.health);
-        $this.createPlayer(true, false, objEnemy.params.name, objEnemy.params.color, 'NPC', 19, 26, objEnemy.params.health);
+        $this.createPlayer(false, false, objEnemy.params.name, objEnemy.params.color, 'NPC', objEnemy.pos_x + 1, objEnemy.pos_y + 1, objEnemy.params.health);
+        //$this.createPlayer(false, false, objEnemy.params.name, objEnemy.params.color, 'NPC', 19, 26, objEnemy.params.health);
       }
 
       // Create Other Players
@@ -709,7 +709,7 @@ var PlayGameState = function(game, app, options) {
 
       // Create Player
       var objPlayer = $this.options.ship;
-      $this.createPlayer(false, true, objPlayer.name, objPlayer.color, objPlayer.lang, objPlayer.pos_x, objPlayer.pos_y, 100);
+      $this.createPlayer(true, true, objPlayer.name, objPlayer.color, objPlayer.lang, objPlayer.pos_x, objPlayer.pos_y, 100);
 
       // Get Coding JSON
       $this.getCodingJson();
@@ -734,9 +734,11 @@ var PlayGameState = function(game, app, options) {
   this.mainGameLoop = function() {
     // Step1: Write Config
     if($this.options.game_loop.step == 'write_input') {
+      console.log($this.options.game_loop.turn);
       $this.gameLoopWriteInput();
       $this.options.game_loop.step = 'trigger_script';
-      setTimeout(function() {$this.mainGameLoop();}, 500);
+      // TODO: Das muss während der letzten aktion ausgeführt werden und dann warten bis next task
+      setTimeout(function() {$this.mainGameLoop();}, 100);
       return;
     }
 
@@ -786,11 +788,25 @@ var PlayGameState = function(game, app, options) {
 
     // Step5: Execute PostEvents
     if($this.options.game_loop.step == 'post_events') {
-      $this.gameLoopSetOrder('Post');
-      $this.options.game_loop.turn++;
-      $this.options.game_loop.step = 'write_input';
-      $this.mainGameLoop();
-      return;
+      // Only Recall if Next Step if active
+      if(!$this.options.game_loop.blockNextStep) {
+        $this.gameLoopSetOrder('Post');
+      }
+
+      // When all Orders are completted then do next step
+      if($this.getLoopSetOrderStatus('Post')) {
+        $this.options.game_loop.blockNextStep = false;
+        $this.options.game_loop.turn++;
+        $this.options.game_loop.step = 'write_input';
+        $this.mainGameLoop();
+        return;
+      } else {
+        // Recall
+        $this.options.game_loop.blockNextStep = true;
+        $this.options.game_loop.step = 'post_events';
+        setTimeout(function() {$this.mainGameLoop();}, 100);
+        return;
+      }
     }
     // TODO: Hier könnte mann noch einen Status für versenkt Gameover etc angeben
   };
@@ -871,6 +887,7 @@ var PlayGameState = function(game, app, options) {
     var numTurn = $this.options.game_loop.turn;
     if(typeof($this.options.game_loop.orders[numTurn]) == 'undefined') {
       $this.options.game_loop.orders[numTurn] = [];
+      $this.options.game_loop.orders[numTurn + '_Post'] = [];
     }
     $this.options.game_loop.orders[numTurn].push(objOrderObj);
   };
@@ -885,14 +902,11 @@ var PlayGameState = function(game, app, options) {
    */
   this.gameLoopSetOrder = function(strSuffix) {
     // Set Suffix
-    if(typeof(strSuffix) == 'undefined') {
-      strSuffix = '';
-    } else {
-      strSuffix = '_' + strSuffix;
-    }
-
     var numTurn = $this.options.game_loop.turn;
-    var objOrders = $this.options.game_loop.orders[numTurn + strSuffix];
+    if(typeof(strSuffix) != 'undefined') {
+      numTurn = numTurn + '_' + strSuffix;
+    }
+    var objOrders = $this.options.game_loop.orders[numTurn];
 
     // Loop Over All Ship Turn Orders
     for(var numIndex in objOrders) {
@@ -921,8 +935,12 @@ var PlayGameState = function(game, app, options) {
    * @param void
    * @return boolFinished   Is true when all Orders are finished
    */
-  this.getLoopSetOrderStatus = function() {
+  this.getLoopSetOrderStatus = function(strSuffix) {
+    // Set Suffix
     var numTurn = $this.options.game_loop.turn;
+    if(typeof(strSuffix) != 'undefined') {
+      numTurn = numTurn + '_' + strSuffix;
+    }
     var objOrders = $this.options.game_loop.orders[numTurn];
 
     // Loop Over All Ship Turn Orders
@@ -951,8 +969,7 @@ var PlayGameState = function(game, app, options) {
    */
   this.gameLoopCalcPostEvents = function() {
     // Create Post Order Array
-    var numTurn = $this.options.game_loop.turn;
-    $this.options.game_loop.orders[numTurn + '_Post'] = [];
+    var numTurn = $this.options.game_loop.turn + '_Post';
 
     // Calculate Hits
     var arrPlayerPos = $this.getPlayerTilePositions();
@@ -972,9 +989,9 @@ var PlayGameState = function(game, app, options) {
             id: objPlayer['id'],
             order: 'SHIP_DAMAGE:{"dmg": 10}'
           };
-          $this.options.game_loop.orders[numTurn + '_Post'].push(objOrderObj);
+          $this.options.game_loop.orders[numTurn].push(objOrderObj);
           // TODO: GUI MESSAGE WITH HIT OR KILL INFO
-          //console.log(objCannon.shooter, "IS HITING", objPlayer['id']);
+          // console.log(objCannon.shooter, "IS HITING", objPlayer['id']);
         }
       }
     }
