@@ -9,6 +9,7 @@ var PlayGameState = function(game, app, options) {
   var _private = {};
   var _game = game;
   var _state = new Kiwi.State('PlayGameState');
+  var _npcHelper = new NpcHelper();
 
   // CodePirate System Variables
   this.options = $.extend({
@@ -144,7 +145,14 @@ var PlayGameState = function(game, app, options) {
 
     // Execute Orders of all Players
     for(var strId in $this.options.players) {
-      var objPlayer = $this.options.players[strId].executeOrderOnUpdate();
+      $this.options.players[strId].executeOrderOnUpdate();
+
+      if($this.options.ship.id == strId) {
+        $this.options.ship.pos_x = $this.options.players[strId].options.position.tile_x;
+        $this.options.ship.pos_y = $this.options.players[strId].options.position.tile_y;
+        $this.options.ship.direction = $this.options.players[strId].options.direction;
+      }
+
     }
 
     // Calculate Minimap Icons
@@ -222,6 +230,7 @@ var PlayGameState = function(game, app, options) {
     var objMission = $this.options.mission;
     $this.options.ship.pos_x = objMission.start_x;
     $this.options.ship.pos_y = objMission.start_y;
+    $this.options.ship.direction = 'S';
   };
 
   /**
@@ -293,7 +302,7 @@ var PlayGameState = function(game, app, options) {
       camera_focus: boolFocus,
       player_name: strName,
       player_color: strColor,
-      player_lang:  'NPC',
+      player_lang:  strLang,
       health: numHealth
     };
     var objPlayer = new ShipGameObject(_game, _state, objPlayerConfig);
@@ -446,7 +455,7 @@ var PlayGameState = function(game, app, options) {
 
         // Kill Trigger
         if(objBlockType.trigger == 'kill') {
-          // TODO
+          boolNoBlock = false;
         }
 
         // Open Fortification Block
@@ -701,7 +710,6 @@ var PlayGameState = function(game, app, options) {
       for(var numIndex in objSpecials.enemy) {
         var objEnemy = objSpecials.enemy[numIndex];
         $this.createPlayer(false, false, objEnemy.params.name, objEnemy.params.color, 'NPC', objEnemy.pos_x + 1, objEnemy.pos_y + 1, objEnemy.params.health);
-        //$this.createPlayer(false, false, objEnemy.params.name, objEnemy.params.color, 'NPC', 19, 26, objEnemy.params.health);
       }
 
       // Create Other Players
@@ -720,7 +728,7 @@ var PlayGameState = function(game, app, options) {
       // Trigger Main Game Loop
       $this.mainGameLoop();
 
-    }, 2000);
+    }, 50);
   };
 
   /**
@@ -737,8 +745,7 @@ var PlayGameState = function(game, app, options) {
       console.log($this.options.game_loop.turn);
       $this.gameLoopWriteInput();
       $this.options.game_loop.step = 'trigger_script';
-      // TODO: Das muss während der letzten aktion ausgeführt werden und dann warten bis next task
-      setTimeout(function() {$this.mainGameLoop();}, 100);
+      setTimeout(function() {$this.mainGameLoop();}, 1);
       return;
     }
 
@@ -751,6 +758,7 @@ var PlayGameState = function(game, app, options) {
     // Step3: Read ship orders
     if($this.options.game_loop.step == 'read_output') {
       $this.gameLoopReadOutput();
+      $this.gameLoopGetNpcOrder(); // TODO: only in Singleplayer
       $this.options.game_loop.step = 'set_order';
       $this.mainGameLoop();
       return;
@@ -773,7 +781,7 @@ var PlayGameState = function(game, app, options) {
         // Recall
         $this.options.game_loop.blockNextStep = true;
         $this.options.game_loop.step = 'set_order';
-        setTimeout(function() {$this.mainGameLoop();}, 100);
+        setTimeout(function() {$this.mainGameLoop();}, 1);
         return;
       }
     }
@@ -804,7 +812,7 @@ var PlayGameState = function(game, app, options) {
         // Recall
         $this.options.game_loop.blockNextStep = true;
         $this.options.game_loop.step = 'post_events';
-        setTimeout(function() {$this.mainGameLoop();}, 100);
+        setTimeout(function() {$this.mainGameLoop();}, 1);
         return;
       }
     }
@@ -879,6 +887,11 @@ var PlayGameState = function(game, app, options) {
     const objFs = require('fs-jetpack');
     var objOrder = JSON.parse(objFs.read($this.options.ship.iofolder + '/output.json'));
 
+    // Ship Order
+    if(objOrder.order == '') {
+      return;
+    }
+
     // Add Ship Orders to Order Array
     var objOrderObj = {
       id: $this.options.ship.id,
@@ -925,6 +938,42 @@ var PlayGameState = function(game, app, options) {
       var objPlayer = $this.getPlayer(strShipId);
       objPlayer.setOrder(strShipOrder, objParam);
     };
+  };
+
+  /**
+   * gameLoopGetNpcOrder
+   * @description
+   * Set The NPC Ship Order
+   *
+   * @param void
+   * @return void
+   */
+  this.gameLoopGetNpcOrder = function() {
+    // NPC Callculations
+    var objMapConfig = $this.getCodingJson();
+    for(var strId in $this.options.players) {
+      var objNpcPlayer = $this.options.players[strId];
+      if(objNpcPlayer.options.player_lang == 'NPC') {
+        var strShipOrder = _npcHelper.getNpcCommand(objMapConfig, objNpcPlayer);
+
+        // Ship Order
+        if(strShipOrder == '') {
+          return;
+        }
+
+        // Add Ship Orders to Order Array
+        var objOrderObj = {
+          id: objNpcPlayer.options.id,
+          order: strShipOrder
+        };
+        var numTurn = $this.options.game_loop.turn;
+        if(typeof($this.options.game_loop.orders[numTurn]) == 'undefined') {
+          $this.options.game_loop.orders[numTurn] = [];
+          $this.options.game_loop.orders[numTurn + '_Post'] = [];
+        }
+        $this.options.game_loop.orders[numTurn].push(objOrderObj);
+      }
+    }
   };
 
   /**
@@ -976,6 +1025,7 @@ var PlayGameState = function(game, app, options) {
 
     // Get CannonHit Positions
     var arrCannonHits = $this.getCannonHitPositions();
+
     // Calculate Hits
     for(var numCannonIndex in arrCannonHits) {
       var objCannon = arrCannonHits[numCannonIndex];
@@ -995,6 +1045,24 @@ var PlayGameState = function(game, app, options) {
         }
       }
     }
+
+    // Ship Collision
+    /*
+    for(var numPlayer1Index in arrPlayerPos) {
+      var objPlayer1 = arrPlayerPos[numPlayer1Index];
+      for(var numPlayer2Index in arrPlayerPos) {
+        var objPlayer2 = arrPlayerPos[numPlayer2Index];
+        if(objPlayer1['tile_x'] == objPlayer2['tile_x'] && objPlayer1['tile_y'] == objPlayer2['tile_y']) {
+          if(objPlayer1.id != objPlayer2.id) {
+            var objOrderObj = {id: objPlayer1['id'], order: 'SHIP_DAMAGE:{"dmg": 100}'};
+            $this.options.game_loop.orders[numTurn].push(objOrderObj);
+            var objOrderObj = {id: objPlayer2['id'], order: 'SHIP_DAMAGE:{"dmg": 100}'};
+            $this.options.game_loop.orders[numTurn].push(objOrderObj);
+          }
+        }
+      }
+    }
+    */
   };
 
   /**
