@@ -39,7 +39,7 @@ var NpcHelper = function() {
     if(strNextStep == '' && objNpcPlayer.options.cannon_loads < 10) {
       strNextStep = 'LOAD_CANNON';
     }
-
+    
     return strNextStep;
   };
 
