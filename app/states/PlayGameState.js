@@ -122,7 +122,7 @@ var PlayGameState = function(game, app, options) {
     $this.options.game_objects = {coins: [],targets: []};
     $this.options.game_loop = {step: 'write_input',init: {},orders: [],turn: 1,blockNextStep: false};
     $this.options.click = {};
-    
+
     // Load Ship Configuration
     $this.getShipConfig();
 
@@ -431,9 +431,6 @@ var PlayGameState = function(game, app, options) {
         objTarget.animation.play('animate');
         objTarget.x = (numPosX * 64) + 8;
         objTarget.y = (numPosY * 64) + 8;
-
-        objTarget.x = (31 * 64) + 8;
-        objTarget.y = (24 * 64) + 8;
 
         objTarget.scaleToHeight(64);
         objTarget.scaleToWidth(64);
@@ -1266,6 +1263,10 @@ var PlayGameState = function(game, app, options) {
    * @return void
    */
   this.renderBanner = function(strTitle, strSubText) {
+    // Get Absolute GUI Pos
+    var numPosX = -1 * _game.cameras.defaultCamera.transform.x;
+    var numPosY = -1 * _game.cameras.defaultCamera.transform.y;
+
     // Remove All Gui Widgets
     if($this.options.gui.banner.alpha == 0) {
       _game.huds.defaultHUD.removeAllWidgets();
@@ -1298,12 +1299,12 @@ var PlayGameState = function(game, app, options) {
       $this.options.gui.subtext = objSubText;
 
       // Render Button
-      $this.options.gui.menubtn.x = $this.options.ship.pos_x * 64 - 60
-      $this.options.gui.menubtn.y = $this.options.ship.pos_y * 64 + 90
+      $this.options.gui.menubtn.x = numPosX + 228;
+      $this.options.gui.menubtn.y = numPosY + 369;
     }
 
     // MenuBtn Handling
-    if(_helper.isMouseOver(228, 379, 204, 55)) {
+    if(_helper.isMouseOver(228, 369, 204, 55)) {
       $this.options.gui.menubtn.animation.switchTo(0);
       if(_helper.isMousePressed() && !$this.options.click.menubtn) {
         $this.options.click.menubtn = true;
@@ -1325,10 +1326,8 @@ var PlayGameState = function(game, app, options) {
     }
 
     // Render Banner Position
-    var numX = $this.options.ship.pos_x * 64 - 265;
-    var numY = $this.options.ship.pos_y * 64 - 80;
-    $this.options.gui.banner.x = numX;
-    $this.options.gui.banner.y = numY;
+    $this.options.gui.banner.x = numPosX + 25;
+    $this.options.gui.banner.y = numPosY + 190;
 
     // Render Banner Income animation
     $this.options.gui.banner.alpha += 0.01;
