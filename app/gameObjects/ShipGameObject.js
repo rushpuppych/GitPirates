@@ -259,9 +259,9 @@ var ShipGameObject = function(game, state, options) {
     }
 
     // Render HUD
-    if($this.options.status != 'killed') {
+    //if($this.options.status != 'killed') {
       $this.renderHUD();
-    }
+    //}
   };
 
   /**
@@ -1051,6 +1051,7 @@ var ShipGameObject = function(game, state, options) {
         $this.options.sfx.ship_kill.play();
       }
 
+      if($this.options.gameObject.alpha > 0.2) {
       $this.options.status = 'sinking';
       $this.options.gameObject.alpha -= 0.005;
       $this.options.hud.playerText.y += (1 - $this.options.gameObject.alpha) * 90;
@@ -1059,7 +1060,7 @@ var ShipGameObject = function(game, state, options) {
       $this.options.hud.healthBar.bar.style.display = 'none';
       $this.options.hud.cannonBar.bg.style.display = 'none';
       $this.options.hud.cannonBar.bar.style.display = 'none';
-
+      }
       if($this.options.gameObject.alpha >= 0.5) {
         $this.options.gameObject.scaleToWidth($this.options.gameObject.alpha * $this.options.gameObject.width);
         $this.options.gameObject.scaleToHeight($this.options.gameObject.alpha * $this.options.gameObject.height);

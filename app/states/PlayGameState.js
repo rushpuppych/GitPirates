@@ -115,6 +115,14 @@ var PlayGameState = function(game, app, options) {
    * @return void
    */
   _state.create = function() {
+    // Reset Game
+    $this.options.player_state = '';
+    $this.options.players = [];
+    $this.options.map_objects = [];
+    $this.options.game_objects = {coins: [],targets: []};
+    $this.options.game_loop = {step: 'write_input',init: {},orders: [],turn: 1,blockNextStep: false};
+    $this.options.click = {};
+    
     // Load Ship Configuration
     $this.getShipConfig();
 
@@ -425,7 +433,7 @@ var PlayGameState = function(game, app, options) {
         objTarget.y = (numPosY * 64) + 8;
 
         objTarget.x = (31 * 64) + 8;
-        objTarget.y = (20 * 64) + 8;
+        objTarget.y = (24 * 64) + 8;
 
         objTarget.scaleToHeight(64);
         objTarget.scaleToWidth(64);
@@ -865,6 +873,11 @@ var PlayGameState = function(game, app, options) {
    * @return void
    */
   this.mainGameLoop = function() {
+    // Quit Loop on finish
+    if($this.options.player_state != '') {
+      return;
+    }
+
     // Step1: Write Config
     if($this.options.game_loop.step == 'write_input') {
       console.log($this.options.game_loop.turn);
@@ -1290,7 +1303,7 @@ var PlayGameState = function(game, app, options) {
     }
 
     // MenuBtn Handling
-    if(_helper.isMouseOver(228, 349, 204, 85)) {
+    if(_helper.isMouseOver(228, 379, 204, 55)) {
       $this.options.gui.menubtn.animation.switchTo(0);
       if(_helper.isMousePressed() && !$this.options.click.menubtn) {
         $this.options.click.menubtn = true;
@@ -1299,6 +1312,12 @@ var PlayGameState = function(game, app, options) {
         $this.options.music.victory.stop();
         $this.options.music.defeat.stop();
         $this.options.music.battle_theme.stop();
+
+        // Remove External Elements
+        $('#Border').css('background-image', '');
+        $('#Minimap').html('');
+        $('.ingame').hide();
+
         _game.states.switchState("MainMenuState");
       }
     } else {
