@@ -1052,7 +1052,7 @@ var ShipGameObject = function(game, state, options) {
       }
 
       $this.options.status = 'sinking';
-      $this.options.gameObject.alpha -= 0.001;
+      $this.options.gameObject.alpha -= 0.005;
       $this.options.hud.playerText.y += (1 - $this.options.gameObject.alpha) * 90;
       $this.options.hud.playerText.style.opacity = $this.options.gameObject.alpha;
       $this.options.hud.healthBar.bg.style.display = 'none';

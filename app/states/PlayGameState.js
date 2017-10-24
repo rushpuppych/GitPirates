@@ -9,6 +9,7 @@ var PlayGameState = function(game, app, options) {
   var _private = {};
   var _game = game;
   var _state = new Kiwi.State('PlayGameState');
+  var _helper = new Helper();
   var _npcHelper = new NpcHelper();
 
   // CodePirate System Variables
@@ -36,8 +37,21 @@ var PlayGameState = function(game, app, options) {
     },
     sfx: {
       coins: {},
-      targets: {}
+      targets: {},
     },
+    music: {
+      battle_theme: {},
+      victory: {},
+      defeat: {},
+      gameover: {}
+    },
+    gui: {
+      banner: {},
+      title: {},
+      subtext: {},
+      menubtn: {}
+    },
+    click: {},
     jterminal: {}
   }, options);
 
@@ -71,6 +85,10 @@ var PlayGameState = function(game, app, options) {
       _state.addSpriteSheet('coin', 'app/assets/images/sprites/coins.png', 16, 16);
       _state.addSpriteSheet('target', 'app/assets/images/sprites/target.png', 48, 48);
 
+      // Banners
+      _state.addImage('banner_ingame', 'app/assets/images/gui/banner_ingame.png', true, 600, 260);
+      _state.addSpriteSheet('menu_button', 'app/assets/images/gui/menu_button.png', 204, 54);
+
       // Load Sound Effects
       _state.addAudio('cannon_fire', 'app/assets/sfx/cannon.mp3');
       _state.addAudio('ship_damage', 'app/assets/sfx/explosion.mp3');
@@ -79,6 +97,8 @@ var PlayGameState = function(game, app, options) {
 
       // Load Music
       _state.addAudio('battle_theme', 'app/assets/music/battle.mp3');
+      _state.addAudio('victory_theme', 'app/assets/music/victory.mp3');
+      _state.addAudio('defeat_theme', 'app/assets/music/defeat.mp3');
 
       // Load SFX
       _state.addAudio('coin_sfx', 'app/assets/sfx/coin.mp3');
@@ -116,6 +136,15 @@ var PlayGameState = function(game, app, options) {
     // Create Background music
     var objBattleThemeMusic = new Kiwi.Sound.Audio(_game, 'battle_theme', 0.3, true);
     objBattleThemeMusic.play();
+    $this.options.music.battle_theme = objBattleThemeMusic;
+
+    // Create Victory music
+    var objVictoryThemeMusic = new Kiwi.Sound.Audio(_game, 'victory_theme', 0.3, true);
+    $this.options.music.victory = objVictoryThemeMusic;
+
+    // Create Defeat music
+    var objDefeatThemeMusic = new Kiwi.Sound.Audio(_game, 'defeat_theme', 0.3, true);
+    $this.options.music.defeat = objDefeatThemeMusic;
 
     // SFX
     var objCoinSfx = new Kiwi.Sound.Audio(_game, 'coin_sfx', 0.1, false);
@@ -150,7 +179,13 @@ var PlayGameState = function(game, app, options) {
 
     // Show Victory Banner
     if($this.options.player_state == 'victory') {
-      //TODO: SHOW BANNER
+      $this.renderBanner('Victory', 'You are now qualified for Multiplayer.');
+      return
+    };
+
+    // Show Defeat Banner
+    if($this.options.player_state == 'defeat') {
+      $this.renderBanner('Defeated', 'You are defeated optimize your code.');
       return
     };
 
@@ -162,6 +197,7 @@ var PlayGameState = function(game, app, options) {
         $this.options.ship.pos_x = $this.options.players[strId].options.position.tile_x;
         $this.options.ship.pos_y = $this.options.players[strId].options.position.tile_y;
         $this.options.ship.direction = $this.options.players[strId].options.direction;
+        $this.options.ship.status = $this.options.players[strId].options.status;
       }
 
     }
@@ -243,6 +279,7 @@ var PlayGameState = function(game, app, options) {
     $this.options.ship.pos_x = objMission.start_x;
     $this.options.ship.pos_y = objMission.start_y;
     $this.options.ship.direction = 'S';
+    $this.options.ship.status = 'idle';
   };
 
   /**
@@ -798,9 +835,24 @@ var PlayGameState = function(game, app, options) {
       // Create Target
       $this.createTarget();
 
+      // Create Banner Ingame
+      var objBannerIngame = new Kiwi.GameObjects.Sprite(_state, 'banner_ingame');
+      objBannerIngame.x = 20;
+      objBannerIngame.y = 180;
+      objBannerIngame.alpha = 0;
+      _state.addChild(objBannerIngame);
+      $this.options.gui.banner = objBannerIngame;
+
+      // Create Banner Button
+      var objMenuBtn = new Kiwi.GameObjects.Sprite(_state, 'menu_button');
+      objMenuBtn.x = -400;
+      objMenuBtn.y = -400;
+      objMenuBtn.animation.switchTo(2);
+      _state.addChild(objMenuBtn);
+      $this.options.gui.menubtn = objMenuBtn;
+
       // Trigger Main Game Loop
       $this.mainGameLoop();
-
     }, 50);
   };
 
@@ -879,7 +931,11 @@ var PlayGameState = function(game, app, options) {
         $this.options.game_loop.blockNextStep = false;
         $this.options.game_loop.turn++;
         $this.options.game_loop.step = 'write_input';
+        if($this.options.ship.status == 'killed') {
+          $this.options.player_state = 'defeat';
+        }
         $this.mainGameLoop();
+
         return;
       } else {
         // Recall
@@ -1188,6 +1244,82 @@ var PlayGameState = function(game, app, options) {
   };
 
   /**
+   * renderBanner
+   * @description
+   * Rendering a Information Banner
+   *
+   * @param strTitle      Banner Title
+   * @param strSubText    Banner Subtext
+   * @return void
+   */
+  this.renderBanner = function(strTitle, strSubText) {
+    // Remove All Gui Widgets
+    if($this.options.gui.banner.alpha == 0) {
+      _game.huds.defaultHUD.removeAllWidgets();
+      $this.options.music.battle_theme.stop();
+
+      // Play Music
+      if($this.options.player_state == 'victory') {
+        $this.options.music.victory.play();
+      }
+      if($this.options.player_state == 'defeat') {
+        $this.options.music.defeat.play();
+      }
+
+      // Render Title Text
+      var objTitle = new Kiwi.HUD.Widget.TextField (_game, strTitle, 240, 210);
+      objTitle.style.fontFamily = "Germania One";
+      objTitle.style.fontSize = "64px";
+      objTitle.style.textAlign = "center";
+      objTitle.style.color = "#000000";
+      _game.huds.defaultHUD.addWidget(objTitle);
+      $this.options.gui.title = objTitle;
+
+      // Render SubText
+      var objSubText = new Kiwi.HUD.Widget.TextField (_game, strSubText, 150, 300);
+      objSubText.style.fontFamily = "Germania One";
+      objSubText.style.fontSize = "24px";
+      objSubText.style.textAlign = "center";
+      objSubText.style.color = "#000000";
+      _game.huds.defaultHUD.addWidget(objSubText);
+      $this.options.gui.subtext = objSubText;
+
+      // Render Button
+      $this.options.gui.menubtn.x = $this.options.ship.pos_x * 64 - 60
+      $this.options.gui.menubtn.y = $this.options.ship.pos_y * 64 + 90
+    }
+
+    // MenuBtn Handling
+    if(_helper.isMouseOver(228, 349, 204, 85)) {
+      $this.options.gui.menubtn.animation.switchTo(0);
+      if(_helper.isMousePressed() && !$this.options.click.menubtn) {
+        $this.options.click.menubtn = true;
+        // Back To MainMenu
+        _game.huds.defaultHUD.removeAllWidgets();
+        $this.options.music.victory.stop();
+        $this.options.music.defeat.stop();
+        $this.options.music.battle_theme.stop();
+        _game.states.switchState("MainMenuState");
+      }
+    } else {
+      $this.options.gui.menubtn.animation.switchTo(2);
+    }
+
+    // Render Banner Position
+    var numX = $this.options.ship.pos_x * 64 - 265;
+    var numY = $this.options.ship.pos_y * 64 - 80;
+    $this.options.gui.banner.x = numX;
+    $this.options.gui.banner.y = numY;
+
+    // Render Banner Income animation
+    $this.options.gui.banner.alpha += 0.01;
+    $this.options.gui.banner.scaleToWidth(600 / 100 * ($this.options.gui.banner.alpha * 100));
+    $this.options.gui.banner.scaleToHeight(260 / 100 * ($this.options.gui.banner.alpha * 100));
+    $this.options.gui.title.style.opacity = $this.options.gui.banner.alpha;
+    $this.options.gui.subtext.style.opacity = $this.options.gui.banner.alpha;
+  };
+
+  /**
    * getState
    * @description
    * This returns the Kiwi Engine GameState
@@ -1201,41 +1333,4 @@ var PlayGameState = function(game, app, options) {
 
   // Constructor Call
   $this.init();
-};
-
-
-
-
-// todelete:
-function runDemo(objPlayer, numStep) {
-  // Order List
-  var orderList = [];
-  var orderParameter = [];
-  orderList[0] = 'MOVE_FORWARDS';
-  orderList[1] = 'LOAD_CANNON';
-  orderList[2] = 'LOAD_CANNON';
-  orderList[3] = 'LOAD_CANNON';
-  orderList[4] = 'LOAD_CANNON';
-  orderList[5] = 'LOAD_CANNON';
-  orderList[6] = 'FIRE_CANNON'; orderParameter[6] = {'cannon': 'left', 'power': 5};
-  orderList[7] = 'SHIP_DAMAGE'; orderParameter[7] = {'dmg': 25};
-  orderList[8] = 'SHIP_DAMAGE'; orderParameter[8] = {'dmg': 25};
-  orderList[9] = 'SHIP_DAMAGE'; orderParameter[9] = {'dmg': 25};
-
-  // Execute Next Step
-  if(objPlayer.isIdle()) {
-    var objParamerer = {}
-    if(typeof(orderParameter[numStep]) != 'undefined') {
-      objParamerer = orderParameter[numStep];
-    }
-
-    objPlayer.setOrder(orderList[numStep], objParamerer);
-    numStep++;
-    if(typeof(orderList[numStep]) == 'undefined') {
-      numStep = 0;
-    }
-  }
-
-  // Recall
-  setTimeout(function() {runDemo(objPlayer, numStep);}, 100);
 };

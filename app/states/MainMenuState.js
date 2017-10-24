@@ -221,7 +221,7 @@ var MainMenuState = function(game, app, options) {
     if(objShipOptions.qualified) {
       strQualification = '[ Qualified ]';
     };
-    
+
     var objShipRanking = new Kiwi.HUD.Widget.TextField (_game, strQualification, 275 + numPosX, 460);
     objShipRanking.style.fontFamily = "Germania One";
     objShipRanking.style.fontSize = "14px";
