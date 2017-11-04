@@ -14,6 +14,8 @@ var PlayGameState = function(game, app, options) {
 
   // CodePirate System Variables
   this.options = $.extend({
+    single_player: true,
+    multiplayer_id: '12345', // this is the uuid of the GameRoom
     map: '',
     ship: {},
     tilemap: {},
@@ -52,7 +54,8 @@ var PlayGameState = function(game, app, options) {
       menubtn: {}
     },
     click: {},
-    jterminal: {}
+    jterminal: {},
+    ws_socket: {}
   }, options);
 
   /**
@@ -117,12 +120,17 @@ var PlayGameState = function(game, app, options) {
   _state.create = function() {
     // Reset Game
     $this.resetBtn();
-    $this.options.player_state = 'victory';
+    $this.options.player_state = '';
     $this.options.players = [];
     $this.options.map_objects = [];
     $this.options.game_objects = {coins: [],targets: []};
     $this.options.game_loop = {step: 'write_input',init: {},orders: [],turn: 1,blockNextStep: false};
     $this.options.click = {};
+
+    // Multiplayer: Build Socket Connection
+    if(!$this.options.single_player) {
+      $this.initializeSocketServer();
+    }
 
     // Load Ship Configuration
     $this.getShipConfig();
@@ -169,8 +177,43 @@ var PlayGameState = function(game, app, options) {
     $this.options.map_height = objMap.height;
     $this.options.map_width = objMap.width;
 
-    // Start InitGame
-    $this.initGameLoop();
+    // Init Game if Single Player
+    if($this.options.single_player) {
+      $this.initGameLoop({});
+    }
+  };
+
+  /**
+   * initializeSocketServer
+   * @description
+   * This sets up the Socket Server for the Game
+   *
+   * @param void
+   * @return void
+   */
+  this.initializeSocketServer = function() {
+    var objSocket = io('http://localhost:3000');
+    $this.options.ws_socket = objSocket;
+
+    // Incoming Message
+    $this.options.ws_socket.on($this.options.multiplayer_id, function(strIncomingMsg){
+      // Parse Incoming Message
+       objIncoming = JSON.parse(strIncomingMsg);
+
+       // Set Other Player Order
+       if(objIncoming.type == 'player_turn') {
+         if(objIncoming.turn == $this.game_loop.turn) {
+           if(typeof($this.options.game_loop.orders[objIncoming.turn][objIncoming.player_id]) == 'undefined') {
+             $this.options.game_loop.orders[objIncoming.turn][objIncoming.player_id] = objIncoming.order;
+           }
+         }
+       }
+
+       // Set Game Init
+       if(objIncoming.type == 'init_game') {
+         $this.initGameLoop(objIncoming);
+       }
+    });
   };
 
   /**
@@ -189,14 +232,12 @@ var PlayGameState = function(game, app, options) {
     // Show Victory Banner
     if($this.options.player_state == 'victory') {
       $this.renderBanner('Victory', 'You are now qualified for Multiplayer.');
-      console.log($this.options.ship);
-      debugger;
+
       /*
       if(objFs.exists('ship_01.json')) {
         $this.options.ships.ship_01 = JSON.parse(objFs.read('ship_01.json'));
       }
       */
-
 
       return
     };
@@ -308,8 +349,10 @@ var PlayGameState = function(game, app, options) {
    * @param void
    * @return void
    */
-  this.setShipConfig = function(strShipConfig) {
+  this.setShipConfig = function(strShipConfig, boolSinglePlayer, strMultiplayerId) {
     $this.options.ship_config = strShipConfig;
+    $this.options.single_player = boolSinglePlayer;
+    $this.options.multiplayer_id = strMultiplayerId;
   };
 
   /**
@@ -822,10 +865,10 @@ var PlayGameState = function(game, app, options) {
    * @description
    * This is the Initialisation for The Main Game Loop
    *
-   * @param void
+   * @param objInitGame This is the Init Object
    * @return void
    */
-  this.initGameLoop = function() {
+  this.initGameLoop = function(objInitGame) {
     setTimeout(function() {
       // Create NPC Players
       var objSpecials = $this.getSpecials();
@@ -835,7 +878,7 @@ var PlayGameState = function(game, app, options) {
       }
 
       // Create Other Players
-      // todo:
+      // TODO: Create Other Players (the infos are in the objInitGame object);
 
       // Create Player
       var objPlayer = $this.options.ship;
@@ -887,7 +930,6 @@ var PlayGameState = function(game, app, options) {
 
     // Step1: Write Config
     if($this.options.game_loop.step == 'write_input') {
-      console.log($this.options.game_loop.turn);
       $this.gameLoopWriteInput();
       $this.options.game_loop.step = 'trigger_script';
       setTimeout(function() {$this.mainGameLoop();}, 1);
@@ -903,7 +945,8 @@ var PlayGameState = function(game, app, options) {
     // Step3: Read ship orders
     if($this.options.game_loop.step == 'read_output') {
       $this.gameLoopReadOutput();
-      $this.gameLoopGetNpcOrder(); // TODO: only in Singleplayer
+      $this.gameLoopGetNpcOrder();
+
       $this.options.game_loop.step = 'set_order';
       $this.mainGameLoop();
       return;
@@ -911,6 +954,15 @@ var PlayGameState = function(game, app, options) {
 
     // Step4: Set Order
     if($this.options.game_loop.step == 'set_order') {
+      // Multiplayer
+      if(!$this.options.single_player) {
+        if(!$this.getOtherPlayerOrders()){
+          // Recall till all Player are finished
+          setTimeout(function() {$this.mainGameLoop();}, 1);
+          return;
+        }
+      }
+
       // Only Recall if Next Step if active
       if(!$this.options.game_loop.blockNextStep) {
         $this.gameLoopSetOrder();
@@ -1051,6 +1103,53 @@ var PlayGameState = function(game, app, options) {
       $this.options.game_loop.orders[numTurn + '_Post'] = [];
     }
     $this.options.game_loop.orders[numTurn].push(objOrderObj);
+
+    // Multiplayer: Send Orders to other Players
+    if(!$this.options.single_player) {
+      var objSendOrder = {
+        type: 'player_turn',
+        player_id: $this.options.ship.id,
+        turn: numTurn,
+        order: objOrderObj
+      }
+      var strSendOrder = JSON.stringify(objSendOrder);
+      $this.options.ws_socket.emit($this.options.multiplayer_id, strSendOrder);
+    }
+  };
+
+  /**
+   * getOtherPlayerOrders
+   * @description
+   * This is waiting for all the Other Players Order
+   *
+   * @param void
+   * @return bool   This is true when all Other Players are finish
+   */
+  this.getOtherPlayerOrders = function() {
+    // Build Non NPC Player List
+    var objPlayers = {};
+    for(var strPlayerId in $this.options.players) {
+      if($this.options.players[strPlayerId].options.player_lang != 'NPC') {
+        objPlayers[strPlayerId] = false;
+      }
+    }
+
+    // Check Orders
+    var numTurn = $this.options.game_loop.turn;
+    for(var numPlayer in $this.options.game_loop.orders[numTurn]) {
+      var objPlayer = $this.options.game_loop.orders[numTurn][numPlayer];
+      if(typeof(objPlayers[objPlayer.id]) != 'undefined') {
+        objPlayers[objPlayer.id] = true;
+      }
+    }
+
+    // Check Orders and Return True when all Orders are set
+    for(var strPlayerId in objPlayers) {
+      if(objPlayers[strPlayerId] == false) {
+        return false;
+      }
+    }
+    return true;
   };
 
   /**
@@ -1328,7 +1427,6 @@ var PlayGameState = function(game, app, options) {
         $('#Border').css('background-image', '');
         $('#Minimap').html('');
         $('.ingame').hide();
-
         _game.states.switchState("MainMenuState");
       }
     } else {

@@ -197,7 +197,8 @@ var MissionSelectState = function(game, app, options) {
         // Switch to PlayGameState
         $('#FormLayer').html("");
         _app.getState('PlayGameState').setMission($this.options.mission);
-        _app.getState('PlayGameState').setShipConfig($this.options.ship_config);
+        // TODO: Set Multiplayer
+        _app.getState('PlayGameState').setShipConfig($this.options.ship_config, true, '');
         _game.states.switchState("PlayGameState");
       }
     } else {
