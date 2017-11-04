@@ -19,14 +19,11 @@ var MissionSelectState = function(game, app, options) {
     gui: {
       backbtn: {},
       deletebtn: {},
-      configbtn: {}
+      configbtn: {},
+      singleplayerbtn: {},
+      multiplayerbtn: {}
     },
-    click: {},
-    mission:{
-      start_x: 2,
-      start_y: 2,
-      map: 'qualification'
-    }
+    click: {}
   }, options);
 
   /**
@@ -52,11 +49,14 @@ var MissionSelectState = function(game, app, options) {
     _state.addImage('border_all', 'app/assets/images/gui/border_all.png', true, 1024, 640);
     _state.addImage('wood', 'app/assets/images/gui/wood.png', true, 128, 128, 0, 0);
     _state.addImage('banner_menu', 'app/assets/images/gui/banner_menu.png', true, 800, 346);
+    _state.addImage('multiplayer', 'app/assets/images/gui/multiplayer.png', true, 256, 256);
+    _state.addImage('singleplayer', 'app/assets/images/gui/singleplayer.png', true, 126, 126);
     _state.addSpriteSheet('ships', 'app/assets/images/sprites/ships.png', 76, 123);
     _state.addSpriteSheet('back_button', 'app/assets/images/gui/back_button.png', 204, 54);
     _state.addSpriteSheet('delete_button', 'app/assets/images/gui/delete_button.png', 204, 54);
     _state.addSpriteSheet('config_button', 'app/assets/images/gui/config_button.png', 204, 54);
-    _state.addSpriteSheet('play_button', 'app/assets/images/gui/play_button.png', 204, 54);
+    _state.addSpriteSheet('singleplay_button', 'app/assets/images/gui/singleplay_button.png', 204, 54);
+    _state.addSpriteSheet('multiplay_button', 'app/assets/images/gui/multiplay_button.png', 204, 54);
   };
 
   /**
@@ -101,6 +101,18 @@ var MissionSelectState = function(game, app, options) {
     objBannerMenu.y = 180;
     _state.addChild(objBannerMenu);
 
+    // Create Singleplayer Icon
+    var objSinglePlayer = new Kiwi.GameObjects.Sprite(_state, 'singleplayer');
+    objSinglePlayer.x = 290;
+    objSinglePlayer.y = 270;
+    _state.addChild(objSinglePlayer);
+
+    // Create Multiplayer Icon
+    var objMultiPlayer = new Kiwi.GameObjects.Sprite(_state, 'multiplayer');
+    objMultiPlayer.x = 600;
+    objMultiPlayer.y = 270;
+    _state.addChild(objMultiPlayer);
+
     // Create Back Button
     var objBackBtn = new Kiwi.GameObjects.Sprite(_state, 'back_button');
     objBackBtn.x = 130;
@@ -117,13 +129,21 @@ var MissionSelectState = function(game, app, options) {
     _state.addChild(objDeleteBtn);
     $this.options.gui.deletebtn = objDeleteBtn;
 
-    // Create Play Button
-    var objPlayBtn = new Kiwi.GameObjects.Sprite(_state, 'play_button');
-    objPlayBtn.x = 410;
-    objPlayBtn.y = 340;
-    objPlayBtn.animation.switchTo(2);
-    _state.addChild(objPlayBtn);
-    $this.options.gui.playbtn = objPlayBtn;
+    // Create Singleplayer Button
+    var objSinglePlayerBtn = new Kiwi.GameObjects.Sprite(_state, 'singleplay_button');
+    objSinglePlayerBtn.x = 250;
+    objSinglePlayerBtn.y = 415;
+    objSinglePlayerBtn.animation.switchTo(2);
+    _state.addChild(objSinglePlayerBtn);
+    $this.options.gui.singleplayerbtn = objSinglePlayerBtn;
+
+    // Create Multiplayer Button
+    var objMultiPlayerBtn = new Kiwi.GameObjects.Sprite(_state, 'multiplay_button');
+    objMultiPlayerBtn.x = 560;
+    objMultiPlayerBtn.y = 415;
+    objMultiPlayerBtn.animation.switchTo(2);
+    _state.addChild(objMultiPlayerBtn);
+    $this.options.gui.multiplayerbtn = objMultiPlayerBtn;
 
     // Create Config Button
     var objConfigBtn = new Kiwi.GameObjects.Sprite(_state, 'config_button');
@@ -185,24 +205,30 @@ var MissionSelectState = function(game, app, options) {
       $this.options.gui.configbtn.animation.switchTo(2);
     }
 
-    // PlayBtn Handling
-    if(helper.isMouseOverElement($this.options.gui.playbtn)) {
-      $this.options.gui.playbtn.animation.switchTo(0);
-      if(helper.isMousePressed() && !$this.options.click.playbtn) {
-        $this.options.click.playbtn = true;
+    // SinglePlayerBtn Handling
+    if(helper.isMouseOverElement($this.options.gui.singleplayerbtn)) {
+      $this.options.gui.singleplayerbtn.animation.switchTo(0);
+      if(helper.isMousePressed() && !$this.options.click.singleplayerbtn) {
+        $this.options.click.singleplayerbtn = true;
         _game.huds.defaultHUD.removeAllWidgets();
         // Stop MainMenu Music
         _app.getState('MainMenuState').options.music.stop();
+        $('#FormLayer').html("");
 
         // Switch to PlayGameState
-        $('#FormLayer').html("");
-        _app.getState('PlayGameState').setMission($this.options.mission);
+        // todo: set correct mission
+        var objMission = {
+          start_x: 2,
+          start_y: 2,
+          map: 'qualification'
+        };
+        _app.getState('PlayGameState').setMission(objMission);
         // TODO: Set Multiplayer
         _app.getState('PlayGameState').setShipConfig($this.options.ship_config, true, '');
         _game.states.switchState("PlayGameState");
       }
     } else {
-      $this.options.gui.playbtn.animation.switchTo(2);
+      $this.options.gui.singleplayerbtn.animation.switchTo(2);
     }
   };
 
@@ -231,14 +257,14 @@ var MissionSelectState = function(game, app, options) {
     $this.options.click.backbtn = true;
     $this.options.click.deletebtn = true;
     $this.options.click.configbtn = true;
-    $this.options.click.playbtn = true;
+    $this.options.click.singleplayerbtn = true;
 
     // Reset Btn
     setTimeout(function() {
       $this.options.click.backbtn = false;
       $this.options.click.deletebtn = false;
       $this.options.click.configbtn = false;
-      $this.options.click.playbtn = false;
+      $this.options.click.singleplayerbtn = false;
     }, 500);
   };
 
