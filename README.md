@@ -82,11 +82,10 @@ We use [SemVer](http://semver.org/) for versioning. For the versions available, 
 
 ## Authors
 
-* **Billie Thompson** - *Initial work* - [PurpleBooth](https://github.com/PurpleBooth)
+* **Severin Holm** - *Initial work* - [RushPuppyCH](https://github.com/rushpuppych)
+* **Thomas Breus** - *Project Cleaning* - [RushPuppyCH](https://github.com/rushpuppych)
 
 See also the list of [contributors](https://github.com/your/project/contributors) who participated in this project.
-
-## License
 
 ## License
 
