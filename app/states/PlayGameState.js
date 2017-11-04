@@ -116,7 +116,8 @@ var PlayGameState = function(game, app, options) {
    */
   _state.create = function() {
     // Reset Game
-    $this.options.player_state = '';
+    $this.resetBtn();
+    $this.options.player_state = 'victory';
     $this.options.players = [];
     $this.options.map_objects = [];
     $this.options.game_objects = {coins: [],targets: []};
@@ -188,6 +189,15 @@ var PlayGameState = function(game, app, options) {
     // Show Victory Banner
     if($this.options.player_state == 'victory') {
       $this.renderBanner('Victory', 'You are now qualified for Multiplayer.');
+      console.log($this.options.ship);
+      debugger;
+      /*
+      if(objFs.exists('ship_01.json')) {
+        $this.options.ships.ship_01 = JSON.parse(objFs.read('ship_01.json'));
+      }
+      */
+
+
       return
     };
 
@@ -1335,6 +1345,24 @@ var PlayGameState = function(game, app, options) {
     $this.options.gui.banner.scaleToHeight(260 / 100 * ($this.options.gui.banner.alpha * 100));
     $this.options.gui.title.style.opacity = $this.options.gui.banner.alpha;
     $this.options.gui.subtext.style.opacity = $this.options.gui.banner.alpha;
+  };
+
+  /**
+   * resetBtn
+   * @description
+   * This resets the Buttons after 1sec
+   *
+   * @param void
+   * @return void
+   */
+  this.resetBtn = function() {
+    // Block Btn
+    $this.options.click.menubtn = true;
+
+    // Reset Btn
+    setTimeout(function() {
+      $this.options.click.menubtn = false;
+    }, 500);
   };
 
   /**

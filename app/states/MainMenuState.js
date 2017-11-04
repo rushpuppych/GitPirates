@@ -280,7 +280,7 @@ var MainMenuState = function(game, app, options) {
    * This resets the Buttons after 1sec
    *
    * @param void
-   * @return Kiwi.State
+   * @return void
    */
   this.resetBtn = function() {
     // Block Btn
