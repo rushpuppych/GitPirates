@@ -1,14 +1,3 @@
-# GitPirates Quickstart
-
-Clone and run for a quick way to see GitPirates in action.
-GitPirates is a Electron application. Want to know more about Electron? [Read this](electron.md)
-
-## License
-
-[CC0 1.0 (Public Domain)](LICENSE.md)
-
-
-
 # Project Title
 
 One Paragraph of project description goes here
@@ -32,17 +21,17 @@ A step by step series of examples that tell you have to get a development env ru
 Say what the step will be
 
 ```
-	# Clone this repository
-	git clone https://github.com/rushpuppych/GitPirates
-	
-	# Go into the repository
-	cd GitPirates
-	
-	# Install dependencies
-	npm install
-	
-	# Run the app
-	npm start
+# Clone this repository
+git clone https://github.com/rushpuppych/GitPirates
+
+# Go into the repository
+cd GitPirates
+
+# Install dependencies
+npm install
+
+# Run the app
+npm start
 ```
 
 And repeat
@@ -99,7 +88,9 @@ See also the list of [contributors](https://github.com/your/project/contributors
 
 ## License
 
-This project is licensed under the MIT License - see the [LICENSE.md](LICENSE.md) file for details
+## License
+
+This project is licensed under the [CC0 1.0 (Public Domain)](LICENSE.md)
 
 ## Acknowledgments
 
