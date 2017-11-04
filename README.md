@@ -1,20 +1,6 @@
 # GitPirates Quickstart
 
 Clone and run for a quick way to see GitPirates in action.
-
-
-	# Clone this repository
-	git clone https://github.com/rushpuppych/GitPirates
-	
-	# Go into the repository
-	cd GitPirates
-	
-	# Install dependencies
-	npm install
-	
-	# Run the app
-	npm start
-
 GitPirates is a Electron application. Want to know more about Electron? [Read this](electron.md)
 
 ## License
@@ -46,7 +32,17 @@ A step by step series of examples that tell you have to get a development env ru
 Say what the step will be
 
 ```
-Give the example
+	# Clone this repository
+	git clone https://github.com/rushpuppych/GitPirates
+	
+	# Go into the repository
+	cd GitPirates
+	
+	# Install dependencies
+	npm install
+	
+	# Run the app
+	npm start
 ```
 
 And repeat
