@@ -117,7 +117,7 @@ var SinglePlayerState = function(game, app, options) {
     strForm += '         <td width="45%" valign="top">';
     strForm += '            <select id="map_selection" size="10" class="form-control">';
     strForm += '               <option value="qualification">Qualification</option>';
-    strForm += '               <option value="cptrush">Captain RushPuppy</option>';
+    strForm += '               <option value="open_waters">Openwaters</option>';
     strForm += '            </select>';
     strForm += '         </td>';
     strForm += '         <td width="5%" valign="top">';
