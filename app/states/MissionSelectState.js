@@ -101,6 +101,14 @@ var MissionSelectState = function(game, app, options) {
     objBannerMenu.y = 180;
     _state.addChild(objBannerMenu);
 
+    // Selection Title
+    var objSelectionTitle = new Kiwi.HUD.Widget.TextField (_game, 'Select Game Mode', 425, 205);
+    objSelectionTitle.style.fontFamily = "Germania One";
+    objSelectionTitle.style.fontSize = "26px";
+    objSelectionTitle.style.textAlign = "center";
+    objSelectionTitle.style.color = "#848484";
+    _game.huds.defaultHUD.addWidget(objSelectionTitle);
+
     // Create Singleplayer Icon
     var objSinglePlayer = new Kiwi.GameObjects.Sprite(_state, 'singleplayer');
     objSinglePlayer.x = 290;

@@ -116,8 +116,8 @@ var ConfigShipState = function(game, app, options) {
     strForm += '   <table width="100%">'
     strForm += '      <tr>';
     strForm += '         <td width="45%" valign="top">';
-    strForm += '            Playername: <input id="input_name" type="text" class="form-control" placeholder="Player Name">';
-    strForm += '            Ship Color: <select id="input_color" class="form-control">';
+    strForm += '            Playername: <input id="input_name" type="text" class="form-control" placeholder="Player Name" style="background-color: rgba(255, 255, 255, 0.5);">';
+    strForm += '            Ship Color: <select id="input_color" class="form-control" style="background-color: rgba(255, 255, 255, 0.5);">';
     strForm += '               <option value="green" selected>Green</option>';
     strForm += '               <option value="blue">Blue</option>';
     strForm += '               <option value="yellow">Yellow</option>';
@@ -127,7 +127,7 @@ var ConfigShipState = function(game, app, options) {
     strForm += '         <td width="10%" valign="top">';
     strForm += '         </td>';
     strForm += '         <td width="45%" valign="top">';
-    strForm += '            Language: <select id="input_lang" class="form-control">';
+    strForm += '            Language: <select id="input_lang" class="form-control" style="background-color: rgba(255, 255, 255, 0.5);">';
     strForm += '               <option value="PHP">PHP</option>';
     strForm += '               <option value="CPP">C++</option>';
     strForm += '               <option value="JVM">Java</option>';
@@ -140,8 +140,8 @@ var ConfigShipState = function(game, app, options) {
     //strForm += '               <option value="BAT">Win Batch</option>';
     //strForm += '               <option value="SH">Shellscript (Linux)</option>';
     strForm += '            </select>';
-    strForm += '            Input/Output Folder Path: <input id="input_iopath" type="text" class="form-control" placeholder="">';
-    strForm += '            Execution Path: <input id="input_exec" type="text" class="form-control" placeholder="">';
+    strForm += '            Input/Output Folder Path: <input id="input_iopath" type="text" class="form-control" placeholder="" style="background-color: rgba(255, 255, 255, 0.5);">';
+    strForm += '            Execution Path: <input id="input_exec" type="text" class="form-control" placeholder="" style="background-color: rgba(255, 255, 255, 0.5);">';
     strForm += '         </td>';
     strForm += '      </tr>';
     strForm += '   </table>';

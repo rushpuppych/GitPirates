@@ -20,6 +20,8 @@ var SinglePlayerState = function(game, app, options) {
       backbtn: {},
       playbtn: {},
     },
+    maps: [],
+    selected_map: '',
     click: {}
   }, options);
 
@@ -75,6 +77,9 @@ var SinglePlayerState = function(game, app, options) {
       }
     }
 
+    // Load Maps
+    $this.loadMaps();
+
     // Create Logo
     var objLogo = new Kiwi.GameObjects.Sprite(_state, 'logo_big');
     objLogo.x = 190;
@@ -92,6 +97,14 @@ var SinglePlayerState = function(game, app, options) {
     objBannerMenu.x = 110;
     objBannerMenu.y = 180;
     _state.addChild(objBannerMenu);
+
+    // Selection Title
+    var objSelectionTitle = new Kiwi.HUD.Widget.TextField (_game, 'Select your map', 425, 205);
+    objSelectionTitle.style.fontFamily = "Germania One";
+    objSelectionTitle.style.fontSize = "26px";
+    objSelectionTitle.style.textAlign = "center";
+    objSelectionTitle.style.color = "#848484";
+    _game.huds.defaultHUD.addWidget(objSelectionTitle);
 
     // Create Back Button
     var objBackBtn = new Kiwi.GameObjects.Sprite(_state, 'back_button');
@@ -115,19 +128,22 @@ var SinglePlayerState = function(game, app, options) {
     strForm += '   <table width="100%">'
     strForm += '      <tr>';
     strForm += '         <td width="45%" valign="top">';
-    strForm += '            <select id="map_selection" size="10" class="form-control">';
-    strForm += '               <option value="qualification">Qualification</option>';
-    strForm += '               <option value="open_waters">Openwaters</option>';
+    strForm += '            <select id="map_selection" size="10" class="form-control" style="background-color: rgba(255, 255, 255, 0.5);">';
+
+    // Create Map Record
+    for(numIndex in $this.options.maps) {
+      var objMap = $this.options.maps[numIndex];
+      strForm += '<option value="' + objMap.name + '" data-index="' + numIndex + '">' + objMap.info.name + '</option>';
+    }
+
     strForm += '            </select>';
     strForm += '         </td>';
     strForm += '         <td width="5%" valign="top">';
     strForm += '         </td>';
     strForm += '         <td width="150px" valign="top">';
-    strForm += '            <img src="app/data/maps/qualification/map.png" style="width: 150px; height: 150px; border: 1px solid #A4A4A4; border-radius: 5px;">';
+    strForm += '            <img id="map_preview_img" src="" style="width: 150px; height: 150px; border: 1px solid #A4A4A4; border-radius: 5px;">';
     strForm += '         </td>';
-    strForm += '         <td width="25%" valign="top">';
-    strForm += '            The "Qualification" Map is the ultimative test map your ship needs to be victorious in this map to be able to join any multiplayer game';
-
+    strForm += '         <td id="map_info_txt" width="25%" valign="top">';
     /* This is Multiplayer stuff ;-)
     strForm += '            Password: <input id="input_name" type="text" class="form-control" placeholder="Player Name">';
     strForm += '            Cannon Damage: <select id="input_color" class="form-control">';
@@ -144,6 +160,15 @@ var SinglePlayerState = function(game, app, options) {
     strForm += '   </table>';
     strForm += '</div>';
     $('#FormLayer').html(strForm);
+
+    // Form Events
+    $('#map_selection').off().on('change', function() {
+      var strValue = $('#map_selection').val();
+      var numIndex = $('#map_selection').find('[value="' + strValue + '"]').data('index');
+      $('#map_preview_img').attr('src', $this.options.maps[numIndex]['image']);
+      $('#map_info_txt').html($this.options.maps[numIndex]['info']['description']);
+      $this.options.selected_map = strValue;
+    });
   };
 
   /**
@@ -166,7 +191,8 @@ var SinglePlayerState = function(game, app, options) {
         $this.options.click.backbtn = true;
         _game.huds.defaultHUD.removeAllWidgets();
         $('#FormLayer').html("");
-        _game.states.switchState("MainMenuState");
+        _app.getState('MissionSelectState').setShipConfig($this.options.ship_config);
+        _game.states.switchState("MissionSelectState");
       }
     } else {
       $this.options.gui.backbtn.animation.switchTo(2);
@@ -183,19 +209,41 @@ var SinglePlayerState = function(game, app, options) {
         $('#FormLayer').html("");
 
         // Switch to PlayGameState
-        // todo: set correct mission
-        var objMission = {
-          start_x: 2,
-          start_y: 2,
-          map: 'qualification'
-        };
+        var objMission = {start_x: 32, start_y: 32, map: $this.options.selected_map};
         _app.getState('PlayGameState').setMission(objMission);
-        // TODO: Set Multiplayer
         _app.getState('PlayGameState').setShipConfig($this.options.ship_config, true, '');
         _game.states.switchState("PlayGameState");
       }
     } else {
       $this.options.gui.playbtn.animation.switchTo(2);
+    }
+  };
+
+  /**
+   * loadMaps
+   * @description
+   * Loading All Maps in Map Directory
+   *
+   * @param void
+   * @return void
+   */
+  this.loadMaps = function() {
+    const objFs = require('fs-jetpack');
+    objList = objFs.list('app/data/maps');
+    for(numIndex in objList) {
+      var objFile = objFs.inspect('app/data/maps/' + objList[numIndex]);
+      if(objFile.type == 'dir') {
+        var objInfo = objFs.read('app/data/maps/' + objList[numIndex] + '/info.json', 'json');
+        if(objInfo.type == 'singleplayer') {
+          var objMap = {
+            path: 'app/data/maps/' + objList[numIndex],
+            name: objFile.name,
+            info: objInfo,
+            image: 'app/data/maps/' + objList[numIndex] + '/map.png'
+          };
+          $this.options.maps.push(objMap);
+        }
+      }
     }
   };
 
