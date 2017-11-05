@@ -130,11 +130,15 @@ var ConfigShipState = function(game, app, options) {
     strForm += '            Language: <select id="input_lang" class="form-control">';
     strForm += '               <option value="PHP">PHP</option>';
     strForm += '               <option value="CPP">C++</option>';
-    //strForm += '               <option value="JVM">Java</option>';
-    //strForm += '               <option value="JS">JavaScript</option>';
-    //strForm += '               <option value="PY">Python</option>';
-    //strForm += '               <option value="CS">CSharp</option>';
-    //strForm += '               <option value="RB">Ruby</option>';
+    strForm += '               <option value="JVM">Java</option>';
+    strForm += '               <option value="JS">JavaScript</option>';
+    strForm += '               <option value="PY">Python</option>';
+    strForm += '               <option value="CS">CSharp</option>';
+    strForm += '               <option value="RB">Ruby</option>';
+    //strForm += '               <option value="BAS">Basic</option>';
+    //strForm += '               <option value="ASM">Assembler (x86)</option>';
+    //strForm += '               <option value="BAT">Win Batch</option>';
+    //strForm += '               <option value="SH">Shellscript (Linux)</option>';
     strForm += '            </select>';
     strForm += '            Input/Output Folder Path: <input id="input_iopath" type="text" class="form-control" placeholder="">';
     strForm += '            Execution Path: <input id="input_exec" type="text" class="form-control" placeholder="">';
@@ -154,7 +158,7 @@ var ConfigShipState = function(game, app, options) {
 
     // Load Config
     _private.loadConfig($this.options.ship_config);
-    _private.changeShipColor($("#input_color").val());    
+    _private.changeShipColor($("#input_color").val());
 
     // Create Back Button
     var objBackBtn = new Kiwi.GameObjects.Sprite(_state, 'back_button');
