@@ -48,9 +48,9 @@ Give an example
 
 ## Built With
 
-* [Dropwizard](http://www.dropwizard.io/1.0.2/docs/) - The web framework used
-* [Maven](https://maven.apache.org/) - Dependency Management
-* [ROME](https://rometools.github.io/rome/) - Used to generate RSS Feeds
+* [Electron](https://electron.atom.io/) - Build cross platform desktop apps with JavaScript, HTML, and CSS.
+* [OpenGameArt](https://opengameart.org/) - Opensource Game Resources.
+* [KennyAssets](https://kenney.nl/assets) - Game Assets (to buy and sometimes free to use under CC License)
 
 ## Contributing
 
@@ -60,8 +60,6 @@ Please read [CONTRIBUTING.md](https://gist.github.com/PurpleBooth/b24679402957c6
 
 * **Severin Holm** - *Initial work* - [RushPuppyCH](https://github.com/rushpuppych)
 * **Thomas Breuss** - *Project Cleaning* - [TBreuss](https://github.com/tbreuss)
-
-See also the list of [contributors](https://github.com/your/project/contributors) who participated in this project.
 
 ## License
 
