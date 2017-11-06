@@ -18,7 +18,8 @@ var MultiPlayerState = function(game, app, options) {
     ship: {},
     gui: {
       backbtn: {},
-      playbtn: {},
+      createbtn: {},
+      joinbtn: {}
     },
     maps: [],
     selected_map: '',
@@ -49,8 +50,8 @@ var MultiPlayerState = function(game, app, options) {
     _state.addImage('wood', 'app/assets/images/gui/wood.png', true, 128, 128, 0, 0);
     _state.addImage('banner_menu', 'app/assets/images/gui/banner_menu.png', true, 800, 346);
     _state.addSpriteSheet('ships', 'app/assets/images/sprites/ships.png', 76, 123);
-    _state.addSpriteSheet('back_button', 'app/assets/images/gui/back_button.png', 204, 54);
-    _state.addSpriteSheet('play_button', 'app/assets/images/gui/play_button.png', 204, 54);
+    _state.addSpriteSheet('create_button', 'app/assets/images/gui/create_button.png', 204, 54);
+    _state.addSpriteSheet('join_button', 'app/assets/images/gui/join_button.png', 204, 54);
   };
 
   /**
@@ -114,24 +115,33 @@ var MultiPlayerState = function(game, app, options) {
     _state.addChild(objBackBtn);
     $this.options.gui.backbtn = objBackBtn;
 
-    // Create Play Button
-    var objPlayBtn = new Kiwi.GameObjects.Sprite(_state, 'play_button');
-    objPlayBtn.x = 560;
-    objPlayBtn.y = 415;
-    objPlayBtn.animation.switchTo(2);
-    _state.addChild(objPlayBtn);
-    $this.options.gui.playbtn = objPlayBtn;
+    // Join Game Button
+    var objJoinBtn = new Kiwi.GameObjects.Sprite(_state, 'join_button');
+    objJoinBtn.x = 250;
+    objJoinBtn.y = 415;
+    objJoinBtn.animation.switchTo(2);
+    _state.addChild(objJoinBtn);
+    $this.options.gui.joinbtn = objJoinBtn;
+
+    // Create Game Button
+    var objCreateBtn = new Kiwi.GameObjects.Sprite(_state, 'create_button');
+    objCreateBtn.x = 560;
+    objCreateBtn.y = 415;
+    objCreateBtn.animation.switchTo(2);
+    _state.addChild(objCreateBtn);
+    $this.options.gui.createbtn = objCreateBtn;
 
     // Create Config Form
     var strForm = '';
     strForm += '<div style="position: absolute; top: 250px; left: 200px; height: 280px; width: 620px; font-family: Germania One;">';
     strForm += '   <table width="100%">'
     strForm += '      <tr>';
-    strForm += '         <td width="45%" valign="top">';
-    strForm += '         </td>';
-    strForm += '         <td width="5%" valign="top">';
-    strForm += '         </td>';
-    strForm += '         <td width="45%" valign="top">';
+    strForm += '         <td width="100%" valign="top">';
+    strForm += '            <select id="map_selection" size="6" class="form-control" style="background-color: rgba(255, 255, 255, 0.5);">';
+
+    strForm += '               <option>[ 0 / 6 ]- Rushpuppys Game -[ Qualification ]</option>';
+
+    strForm += '            </select>';
     strForm += '         </td>';
     strForm += '      </tr>';
     strForm += '   </table>';
@@ -175,24 +185,41 @@ var MultiPlayerState = function(game, app, options) {
       $this.options.gui.backbtn.animation.switchTo(2);
     }
 
-    // PlayBtn Handling
-    if(helper.isMouseOverElement($this.options.gui.playbtn)) {
-      $this.options.gui.playbtn.animation.switchTo(0);
-      if(helper.isMousePressed() && !$this.options.click.playbtn) {
-        $this.options.click.playbtn = true;
+    // JoinBtn Handling
+    if(helper.isMouseOverElement($this.options.gui.joinbtn)) {
+      $this.options.gui.joinbtn.animation.switchTo(0);
+      if(helper.isMousePressed() && !$this.options.click.joinbtn) {
+        $this.options.click.joinbtn = true;
         _game.huds.defaultHUD.removeAllWidgets();
         // Stop MainMenu Music
-        _app.getState('MainMenuState').options.music.stop();
         $('#FormLayer').html("");
 
-        // Switch to PlayGameState
-        var objMission = {start_x: 32, start_y: 32, map: $this.options.selected_map};
-        _app.getState('PlayGameState').setMission(objMission);
-        _app.getState('PlayGameState').setShipConfig($this.options.ship_config, true, '');
+        // Switch to MultiPlayerCreateState
+        var objMap = {
+          
+        }
+        _app.getState('PlayGameState').setShipConfig($this.options.ship_config, false, objMap);
         _game.states.switchState("PlayGameState");
       }
     } else {
-      $this.options.gui.playbtn.animation.switchTo(2);
+      $this.options.gui.joinbtn.animation.switchTo(2);
+    }
+
+    // CreateBtn Handling
+    if(helper.isMouseOverElement($this.options.gui.createbtn)) {
+      $this.options.gui.createbtn.animation.switchTo(0);
+      if(helper.isMousePressed() && !$this.options.click.createbtn) {
+        $this.options.click.createbtn = true;
+        _game.huds.defaultHUD.removeAllWidgets();
+        // Stop MainMenu Music
+        $('#FormLayer').html("");
+
+        // Switch to MultiPlayerCreateState
+        _app.getState('MultiPlayerCreateState').setShipConfig($this.options.ship_config, true, '');
+        _game.states.switchState("MultiPlayerCreateState");
+      }
+    } else {
+      $this.options.gui.createbtn.animation.switchTo(2);
     }
   };
 
@@ -249,12 +276,14 @@ var MultiPlayerState = function(game, app, options) {
   this.resetBtn = function() {
     // Block Btn
     $this.options.click.backbtn = true;
-    $this.options.click.playbtn = true;
+    $this.options.click.createbtn = true;
+    $this.options.click.joinbtn = true;
 
     // Reset Btn
     setTimeout(function() {
       $this.options.click.backbtn = false;
-      $this.options.click.playbtn = false;
+      $this.options.click.createbtn = false;
+      $this.options.click.joinbtn = false;
     }, 500);
   };
 

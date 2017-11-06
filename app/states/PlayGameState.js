@@ -19,6 +19,7 @@ var PlayGameState = function(game, app, options) {
     map: '',
     ship: {},
     tilemap: {},
+    players_count: 1,
     players: [],
     player_state: '',
     map_objects: [],
@@ -366,6 +367,11 @@ var PlayGameState = function(game, app, options) {
   this.setMission = function(objMission) {
     $this.options.mission = objMission;
     $this.options.map = objMission.map;
+
+    // Set Player Counts
+    if(typeof(objMission.players) == 'undefined') {
+      $this.options.players_count = objMission.players;
+    }
   };
 
   /**

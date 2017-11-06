@@ -99,7 +99,7 @@ var MultiPlayerCreateState = function(game, app, options) {
     _state.addChild(objBannerMenu);
 
     // Selection Title
-    var objSelectionTitle = new Kiwi.HUD.Widget.TextField (_game, 'Select your map', 425, 205);
+    var objSelectionTitle = new Kiwi.HUD.Widget.TextField (_game, 'Create your Game', 425, 205);
     objSelectionTitle.style.fontFamily = "Germania One";
     objSelectionTitle.style.fontSize = "26px";
     objSelectionTitle.style.textAlign = "center";
@@ -127,7 +127,7 @@ var MultiPlayerCreateState = function(game, app, options) {
     strForm += '<div style="position: absolute; top: 250px; left: 200px; height: 280px; width: 620px; font-family: Germania One;">';
     strForm += '   <table width="100%">'
     strForm += '      <tr>';
-    strForm += '         <td width="45%" valign="top">';
+    strForm += '         <td width="35%" valign="top">';
     strForm += '            <select id="map_selection" size="10" class="form-control" style="background-color: rgba(255, 255, 255, 0.5);">';
 
     // Create Map Record
@@ -143,18 +143,23 @@ var MultiPlayerCreateState = function(game, app, options) {
     strForm += '         <td width="150px" valign="top">';
     strForm += '            <img id="map_preview_img" src="" style="width: 150px; height: 150px; border: 1px solid #A4A4A4; border-radius: 5px;">';
     strForm += '         </td>';
-    strForm += '         <td id="map_info_txt" width="25%" valign="top">';
-    /* This is Multiplayer stuff ;-)
-    strForm += '            Password: <input id="input_name" type="text" class="form-control" placeholder="Player Name">';
-    strForm += '            Cannon Damage: <select id="input_color" class="form-control">';
-    strForm += '               <option value="10" selected>10</option>';
-    strForm += '               <option value="20">20</option>';
-    strForm += '               <option value="25">25</option>';
-    strForm += '               <option value="40">40</option>';
-    strForm += '               <option value="50">50</option>';
-    strForm += '               <option value="100">100</option>';
+    strForm += '         <td width="5%" valign="top">';
+    strForm += '         </td>';
+    strForm += '         <td width="35%" valign="top">';
+    strForm += '            Name: <input id="input_name" type="text" class="form-control" placeholder="Game Name">';
+    strForm += '            Players: <select id="input_players" class="form-control">';
+    strForm += '               <option value="2">2 Player</option>';
+    strForm += '               <option value="3">3 Player</option>';
+    strForm += '               <option value="4" selected>4 Player</option>';
+    strForm += '               <option value="5">5 Player</option>';
+    strForm += '               <option value="6">6 Player</option>';
+    strForm += '               <option value="7">7 Player</option>';
+    strForm += '               <option value="8">8 Player</option>';
+    strForm += '               <option value="9">9 Player</option>';
+    strForm += '               <option value="10">10 Player</option>';
+    strForm += '               <option value="11">11 Player</option>';
+    strForm += '               <option value="12">12 Player</option>';
     strForm += '            </select>';
-    */
     strForm += '         </td>';
     strForm += '      </tr>';
     strForm += '   </table>';
@@ -166,7 +171,6 @@ var MultiPlayerCreateState = function(game, app, options) {
       var strValue = $('#map_selection').val();
       var numIndex = $('#map_selection').find('[value="' + strValue + '"]').data('index');
       $('#map_preview_img').attr('src', $this.options.maps[numIndex]['image']);
-      $('#map_info_txt').html($this.options.maps[numIndex]['info']['description']);
       $this.options.selected_map = strValue;
     });
   };
@@ -209,7 +213,8 @@ var MultiPlayerCreateState = function(game, app, options) {
         $('#FormLayer').html("");
 
         // Switch to PlayGameState
-        var objMission = {start_x: 32, start_y: 32, map: $this.options.selected_map};
+        var numPlayers = $('#input_players').val();
+        var objMission = {start_x: 32, start_y: 32, map: $this.options.selected_map, players: numPlayers};
         _app.getState('PlayGameState').setMission(objMission);
         _app.getState('PlayGameState').setShipConfig($this.options.ship_config, true, '');
         _game.states.switchState("PlayGameState");
