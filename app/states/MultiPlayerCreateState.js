@@ -1,14 +1,14 @@
 /**
- * MultiPlayerState
+ * MultiPlayerCreateState
  * @description
  * CodePirate is a Programming learning Game for Geeks
  */
-var MultiPlayerState = function(game, app, options) {
+var MultiPlayerCreateState = function(game, app, options) {
   var $this = this;
   var _app = app;
   var _private = {};
   var _game = game;
-  var _state = new Kiwi.State('MultiPlayerState');
+  var _state = new Kiwi.State('MultiPlayerCreateState');
   var helper = new Helper();
 
   // CodePirate System Variables
@@ -99,7 +99,7 @@ var MultiPlayerState = function(game, app, options) {
     _state.addChild(objBannerMenu);
 
     // Selection Title
-    var objSelectionTitle = new Kiwi.HUD.Widget.TextField (_game, 'Select your Game', 425, 205);
+    var objSelectionTitle = new Kiwi.HUD.Widget.TextField (_game, 'Select your map', 425, 205);
     objSelectionTitle.style.fontFamily = "Germania One";
     objSelectionTitle.style.fontSize = "26px";
     objSelectionTitle.style.textAlign = "center";
@@ -128,10 +128,33 @@ var MultiPlayerState = function(game, app, options) {
     strForm += '   <table width="100%">'
     strForm += '      <tr>';
     strForm += '         <td width="45%" valign="top">';
+    strForm += '            <select id="map_selection" size="10" class="form-control" style="background-color: rgba(255, 255, 255, 0.5);">';
+
+    // Create Map Record
+    for(numIndex in $this.options.maps) {
+      var objMap = $this.options.maps[numIndex];
+      strForm += '<option value="' + objMap.name + '" data-index="' + numIndex + '">' + objMap.info.name + '</option>';
+    }
+
+    strForm += '            </select>';
     strForm += '         </td>';
     strForm += '         <td width="5%" valign="top">';
     strForm += '         </td>';
-    strForm += '         <td width="45%" valign="top">';
+    strForm += '         <td width="150px" valign="top">';
+    strForm += '            <img id="map_preview_img" src="" style="width: 150px; height: 150px; border: 1px solid #A4A4A4; border-radius: 5px;">';
+    strForm += '         </td>';
+    strForm += '         <td id="map_info_txt" width="25%" valign="top">';
+    /* This is Multiplayer stuff ;-)
+    strForm += '            Password: <input id="input_name" type="text" class="form-control" placeholder="Player Name">';
+    strForm += '            Cannon Damage: <select id="input_color" class="form-control">';
+    strForm += '               <option value="10" selected>10</option>';
+    strForm += '               <option value="20">20</option>';
+    strForm += '               <option value="25">25</option>';
+    strForm += '               <option value="40">40</option>';
+    strForm += '               <option value="50">50</option>';
+    strForm += '               <option value="100">100</option>';
+    strForm += '            </select>';
+    */
     strForm += '         </td>';
     strForm += '      </tr>';
     strForm += '   </table>';
@@ -168,8 +191,8 @@ var MultiPlayerState = function(game, app, options) {
         $this.options.click.backbtn = true;
         _game.huds.defaultHUD.removeAllWidgets();
         $('#FormLayer').html("");
-        _app.getState('MissionSelectState').setShipConfig($this.options.ship_config);
-        _game.states.switchState("MissionSelectState");
+        _app.getState('MultiPlayerState').setShipConfig($this.options.ship_config);
+        _game.states.switchState("MultiPlayerState");
       }
     } else {
       $this.options.gui.backbtn.animation.switchTo(2);

@@ -26,6 +26,7 @@ var App = function(options) {
     _private.registerState('MissionSelectState', new MissionSelectState($this.options.game, $this));
     _private.registerState('SinglePlayerState', new SinglePlayerState($this.options.game, $this));
     _private.registerState('MultiPlayerState', new MultiPlayerState($this.options.game, $this));
+    _private.registerState('MultiPlayerCreateState', new MultiPlayerCreateState($this.options.game, $this));
     _private.registerState('PlayGameState', new PlayGameState($this.options.game, $this));
 
     // Run Game
