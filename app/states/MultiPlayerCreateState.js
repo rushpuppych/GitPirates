@@ -171,7 +171,7 @@ var MultiPlayerCreateState = function(game, app, options) {
       var strValue = $('#map_selection').val();
       var numIndex = $('#map_selection').find('[value="' + strValue + '"]').data('index');
       $('#map_preview_img').attr('src', $this.options.maps[numIndex]['image']);
-      $this.options.selected_map = strValue;
+      // TODO: button activation from gray to active
     });
   };
 
@@ -210,11 +210,26 @@ var MultiPlayerCreateState = function(game, app, options) {
         _game.huds.defaultHUD.removeAllWidgets();
         // Stop MainMenu Music
         _app.getState('MainMenuState').options.music.stop();
-        $('#FormLayer').html("");
+
+        // Register New Game
+        var objData = {
+          id: helper.uuid(),
+          name: $('#input_name').val(),
+          map: $('#map_selection').val(),
+          players: 1,
+          slots: $('#input_players').val()
+        };
+        $.ajax({
+          type: "POST",
+          url: 'http://localhost:3000/create',
+          data: JSON.stringify(objData),
+          contentType: 'application/json'
+        });
 
         // Switch to PlayGameState
         var numPlayers = $('#input_players').val();
-        var objMission = {start_x: 32, start_y: 32, map: $this.options.selected_map, players: numPlayers};
+        var objMission = {start_x: 32, start_y: 32, map: $('#map_selection').val(), players: numPlayers};
+        $('#FormLayer').html("");
         _app.getState('PlayGameState').setMission(objMission);
         _app.getState('PlayGameState').setShipConfig($this.options.ship_config, true, '');
         _game.states.switchState("PlayGameState");
