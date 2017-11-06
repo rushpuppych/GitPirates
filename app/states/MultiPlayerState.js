@@ -1,14 +1,14 @@
 /**
- * SinglePlayerState
+ * MultiPlayerState
  * @description
  * CodePirate is a Programming learning Game for Geeks
  */
-var SinglePlayerState = function(game, app, options) {
+var MultiPlayerState = function(game, app, options) {
   var $this = this;
   var _app = app;
   var _private = {};
   var _game = game;
-  var _state = new Kiwi.State('SinglePlayerState');
+  var _state = new Kiwi.State('MultiPlayerState');
   var helper = new Helper();
 
   // CodePirate System Variables

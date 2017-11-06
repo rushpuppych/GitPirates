@@ -228,6 +228,21 @@ var MissionSelectState = function(game, app, options) {
     } else {
       $this.options.gui.singleplayerbtn.animation.switchTo(2);
     }
+
+    // MultiPlayerBtn Handling
+    if(helper.isMouseOverElement($this.options.gui.multiplayerbtn)) {
+      $this.options.gui.multiplayerbtn.animation.switchTo(0);
+      if(helper.isMousePressed() && !$this.options.click.multiplayerbtn) {
+        $this.options.click.multiplayerbtn = true;
+        // Load MultiPlayer State
+        _game.huds.defaultHUD.removeAllWidgets();
+        $('#FormLayer').html("");
+        _app.getState('MultiPlayerState').setShipConfig($this.options.ship_config, true, '');
+        _game.states.switchState("MultiPlayerState");
+      }
+    } else {
+      $this.options.gui.multiplayerbtn.animation.switchTo(2);
+    }
   };
 
   /**
@@ -256,6 +271,7 @@ var MissionSelectState = function(game, app, options) {
     $this.options.click.deletebtn = true;
     $this.options.click.configbtn = true;
     $this.options.click.singleplayerbtn = true;
+    $this.options.click.multiplayerbtn = true;
 
     // Reset Btn
     setTimeout(function() {
@@ -263,6 +279,7 @@ var MissionSelectState = function(game, app, options) {
       $this.options.click.deletebtn = false;
       $this.options.click.configbtn = false;
       $this.options.click.singleplayerbtn = false;
+      $this.options.click.multiplayerbtn = false;
     }, 500);
   };
 
