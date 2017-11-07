@@ -132,30 +132,19 @@ var MultiPlayerState = function(game, app, options) {
     $this.options.gui.createbtn = objCreateBtn;
 
     // Create Config Form
+    $this.loadMultiplayerLobbyGames();
     var strForm = '';
     strForm += '<div style="position: absolute; top: 250px; left: 200px; height: 280px; width: 620px; font-family: Germania One;">';
     strForm += '   <table width="100%">'
     strForm += '      <tr>';
     strForm += '         <td width="100%" valign="top">';
     strForm += '            <select id="map_selection" size="6" class="form-control" style="background-color: rgba(255, 255, 255, 0.5);">';
-
-    strForm += '               <option>[ 0 / 6 ]- Rushpuppys Game -[ Qualification ]</option>';
-
     strForm += '            </select>';
     strForm += '         </td>';
     strForm += '      </tr>';
     strForm += '   </table>';
     strForm += '</div>';
     $('#FormLayer').html(strForm);
-
-    // Form Events
-    $('#map_selection').off().on('change', function() {
-      var strValue = $('#map_selection').val();
-      var numIndex = $('#map_selection').find('[value="' + strValue + '"]').data('index');
-      $('#map_preview_img').attr('src', $this.options.maps[numIndex]['image']);
-      $('#map_info_txt').html($this.options.maps[numIndex]['info']['description']);
-      $this.options.selected_map = strValue;
-    });
   };
 
   /**
@@ -192,13 +181,17 @@ var MultiPlayerState = function(game, app, options) {
         $this.options.click.joinbtn = true;
         _game.huds.defaultHUD.removeAllWidgets();
         // Stop MainMenu Music
-        $('#FormLayer').html("");
-
+        _app.getState('MainMenuState').options.music.stop();
+        
         // Switch to MultiPlayerCreateState
-        var objMap = {
-          
-        }
-        _app.getState('PlayGameState').setShipConfig($this.options.ship_config, false, objMap);
+        var numIndex = $('#map_selection').val();
+        var numMultiplayerId = $('#map_selection').find('[value="' + numIndex + '"]').data('id');
+        var strMap = $('#map_selection').find('[value="' + numIndex + '"]').data('map');
+        var objMission = {start_x: 32, start_y: 32, map: strMap};
+
+        $('#FormLayer').html("");
+        _app.getState('PlayGameState').setMission(objMission);
+        _app.getState('PlayGameState').setShipConfig($this.options.ship_config, false, numMultiplayerId);
         _game.states.switchState("PlayGameState");
       }
     } else {
@@ -215,12 +208,34 @@ var MultiPlayerState = function(game, app, options) {
         $('#FormLayer').html("");
 
         // Switch to MultiPlayerCreateState
-        _app.getState('MultiPlayerCreateState').setShipConfig($this.options.ship_config, true, '');
+        _app.getState('MultiPlayerCreateState').setShipConfig($this.options.ship_config);
         _game.states.switchState("MultiPlayerCreateState");
       }
     } else {
       $this.options.gui.createbtn.animation.switchTo(2);
     }
+  };
+
+  /**
+   * loadMultiplayerLobbyGames
+   * @description
+   * Loading all the MultiplayerGames in Lobby state
+   *
+   * @param void
+   * @return void
+   */
+  this.loadMultiplayerLobbyGames = function() {
+    $.ajax({
+      type: "GET",
+      url: 'http://localhost:3000/lobby',
+      contentType: 'application/json',
+      success: function(strResponse) {
+        var objResponse = JSON.parse(strResponse);
+        for(var numIndex in objResponse) {
+          $('#map_selection').append('<option value="' + numIndex + '" data-map="' + objResponse[numIndex]['map'] + '" data-id="' + objResponse[numIndex]['id'] + '">[ ' + objResponse[numIndex]['connected'].length + ' / ' + objResponse[numIndex]['slots'] + ' ]- ' + objResponse[numIndex]['name'] + ' -[ ' + objResponse[numIndex]['map_name'] + ' ]</option>');
+        }
+      }
+    });
   };
 
   /**

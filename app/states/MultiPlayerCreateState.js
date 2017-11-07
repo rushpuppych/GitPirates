@@ -212,12 +212,14 @@ var MultiPlayerCreateState = function(game, app, options) {
         _app.getState('MainMenuState').options.music.stop();
 
         // Register New Game
+        var numMapIndex = $('#map_selection').find('[value="' + $('#map_selection').val() + '"]').data('index');
         var objData = {
           id: helper.uuid(),
           name: $('#input_name').val(),
           map: $('#map_selection').val(),
-          players: 1,
-          slots: $('#input_players').val()
+          map_name: $this.options.maps[numMapIndex]['info']['name'],
+          slots: $('#input_players').val(),
+          connected: []
         };
         $.ajax({
           type: "POST",
@@ -231,7 +233,7 @@ var MultiPlayerCreateState = function(game, app, options) {
         var objMission = {start_x: 32, start_y: 32, map: $('#map_selection').val(), players: numPlayers};
         $('#FormLayer').html("");
         _app.getState('PlayGameState').setMission(objMission);
-        _app.getState('PlayGameState').setShipConfig($this.options.ship_config, true, '');
+        _app.getState('PlayGameState').setShipConfig($this.options.ship_config, false, objData.id);
         _game.states.switchState("PlayGameState");
       }
     } else {
@@ -256,7 +258,7 @@ var MultiPlayerCreateState = function(game, app, options) {
       var objFile = objFs.inspect('app/data/maps/' + objList[numIndex]);
       if(objFile.type == 'dir') {
         var objInfo = objFs.read('app/data/maps/' + objList[numIndex] + '/info.json', 'json');
-        if(objInfo.type == 'singleplayer') {
+        if(objInfo.type == 'multiplayer') {
           var objMap = {
             path: 'app/data/maps/' + objList[numIndex],
             name: objFile.name,

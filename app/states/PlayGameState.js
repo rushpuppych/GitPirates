@@ -128,11 +128,6 @@ var PlayGameState = function(game, app, options) {
     $this.options.game_loop = {step: 'write_input',init: {},orders: [],turn: 1,blockNextStep: false};
     $this.options.click = {};
 
-    // Multiplayer: Build Socket Connection
-    if(!$this.options.single_player) {
-      $this.initializeSocketServer();
-    }
-
     // Load Ship Configuration
     $this.getShipConfig();
 
@@ -178,6 +173,15 @@ var PlayGameState = function(game, app, options) {
     $this.options.map_height = objMap.height;
     $this.options.map_width = objMap.width;
 
+    // Create PlayerShip
+    var objPlayer = $this.options.ship;
+    $this.createPlayer(true, true, objPlayer.name, objPlayer.color, objPlayer.lang, objPlayer.pos_x, objPlayer.pos_y, 100);
+
+    // Multiplayer: Build Socket Connection
+    if(!$this.options.single_player) {
+      $this.initializeSocketServer();
+    }
+
     // Init Game if Single Player
     if($this.options.single_player) {
       $this.initGameLoop({});
@@ -195,6 +199,11 @@ var PlayGameState = function(game, app, options) {
   this.initializeSocketServer = function() {
     var objSocket = io('http://localhost:3000');
     $this.options.ws_socket = objSocket;
+
+    // Send Connection
+    $this.options.ws_socket.on('connect', function(){
+      $this.options.ws_socket.emit('server', {type: 'connect', player_id: $this.options.ship.id, mission_id: $this.options.multiplayer_id});
+    });
 
     // Incoming Message
     $this.options.ws_socket.on($this.options.multiplayer_id, function(strIncomingMsg){
@@ -882,13 +891,6 @@ var PlayGameState = function(game, app, options) {
         var objEnemy = objSpecials.enemy[numIndex];
         $this.createPlayer(false, false, objEnemy.params.name, objEnemy.params.color, 'NPC', objEnemy.pos_x + 1, objEnemy.pos_y + 1, objEnemy.params.health);
       }
-
-      // Create Other Players
-      // TODO: Create Other Players (the infos are in the objInitGame object);
-
-      // Create Player
-      var objPlayer = $this.options.ship;
-      $this.createPlayer(true, true, objPlayer.name, objPlayer.color, objPlayer.lang, objPlayer.pos_x, objPlayer.pos_y, 100);
 
       // Get Coding JSON
       $this.getCodingJson();
