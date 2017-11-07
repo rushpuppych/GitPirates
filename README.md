@@ -1,4 +1,4 @@
-# Project Title
+![CodePirates](https://github.com/rushpuppych/GitPirates/blob/master/app/assets/images/gui/logo_big.png?raw=true)
 
 One Paragraph of project description goes here
 
