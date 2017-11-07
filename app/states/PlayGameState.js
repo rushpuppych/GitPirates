@@ -167,7 +167,14 @@ var PlayGameState = function(game, app, options) {
     // Create Map Events
     var objMap = JSON.parse(_state.data.tilemap.data);
     $this.options.map_objects = objMap.layers[5]['objects'];
-    $this.setPlayerPosition();
+    var objPosition = $this.getPlayerPosition();
+    if($this.options.single_player) {
+      $this.options.ship.pos_x = objPosition.x;
+      $this.options.ship.pos_y = objPosition.y;
+    } else {
+      $this.options.ship.pos_x = 32;
+      $this.options.ship.pos_y = 32;
+    }
 
     // Set Map Positions
     $this.options.map_height = objMap.height;
@@ -202,14 +209,11 @@ var PlayGameState = function(game, app, options) {
 
     // Send Connection
     $this.options.ws_socket.on('connect', function(){
-      $this.options.ws_socket.emit('server', {type: 'connect', player_id: $this.options.ship.id, mission_id: $this.options.multiplayer_id});
+      $this.options.ws_socket.emit('server', {type: 'connect', player_id: $this.options.ship.id, mission_id: $this.options.multiplayer_id, player: $this.options.ship});
     });
 
     // Incoming Message
-    $this.options.ws_socket.on($this.options.multiplayer_id, function(strIncomingMsg){
-      // Parse Incoming Message
-       objIncoming = JSON.parse(strIncomingMsg);
-
+    $this.options.ws_socket.on($this.options.multiplayer_id, function(objIncoming){
        // Set Other Player Order
        if(objIncoming.type == 'player_turn') {
          if(objIncoming.turn == $this.game_loop.turn) {
@@ -219,10 +223,47 @@ var PlayGameState = function(game, app, options) {
          }
        }
 
+       // Create Player
+       if(objIncoming.type == 'player_connected') {
+         $this.loadMultiplayerGame();
+       }
+
        // Set Game Init
        if(objIncoming.type == 'init_game') {
          $this.initGameLoop(objIncoming);
        }
+    });
+  };
+
+  /**
+   * loadMultiplayerGame
+   * @description
+   * Loading all The Players of a Game
+   *
+   * @param fncCallback This is a Callbackfunction
+   * @return void
+   */
+  this.loadMultiplayerGame = function(fncCallback) {
+    $.ajax({
+      type: "GET",
+      url: 'http://localhost:3000/game/' + $this.options.multiplayer_id,
+      contentType: 'application/json',
+      success: function(strResponse) {
+        var objResponse = JSON.parse(strResponse);
+        for(var numIndex in objResponse['connected']) {
+          var objPlayer = objResponse['connected'][numIndex]['player'];
+          if(typeof($this.options.players[objPlayer.id]) == 'undefined') {
+            var objPosition = $this.getPlayerPosition(numIndex);
+            $this.createPlayer(false, false, objPlayer.name, objPlayer.color, objPlayer.lang, objPosition.pos_x + 1, objPosition.pos_y + 1, objPlayer.health, objPlayer.id);
+          } else {
+            var objPosition = $this.getPlayerPosition(numIndex);
+            $this.options.players[objPlayer.id].setTiledPositionInTiles(objPosition.x, objPosition.y);
+          }
+        }
+
+        // Start Main Player Loop
+        // TODO: If all slots are full start MAIN_GAME_LOOP
+      }
     });
   };
 
@@ -384,23 +425,29 @@ var PlayGameState = function(game, app, options) {
   };
 
   /**
-   * setPlayerPosition
+   * getPlayerPosition
    * @description
    * This is setting the Players Position given by the map
    *
-   * @param void
-   * @return void
+   * @param numPosIndex  Optional: This is a speciffic Multiplayer Position
+   * @return objStartPos  This is the Position Object
    */
-  this.setPlayerPosition = function() {
+  this.getPlayerPosition = function(numPosIndex) {
     var objStartPos = {};
     for(var numIndex in $this.options.map_objects) {
       var objMapObject = $this.options.map_objects[numIndex];
-
       if(objMapObject.name == 'START') {
         var numPosX = parseInt(objMapObject.x / 64);
         var numPosY = parseInt(objMapObject.y / 64);
-        $this.options.ship.pos_x = numPosX + 1;
-        $this.options.ship.pos_y = numPosY + 1;
+        objStartPos.x = numPosX + 1;
+        objStartPos.y = numPosY + 1;
+
+        // In Multiplayer Set the Specific Position
+        if(typeof(numPosIndex) != 'undefined') {
+          if(numPosIndex == numIndex) {
+            return objStartPos;
+          }
+        }
       }
     }
     return objStartPos;
@@ -419,9 +466,10 @@ var PlayGameState = function(game, app, options) {
    * @param numPosX     Position X in tiles
    * @param numPosY     Position Y in tiles
    * @param numHealth   Ship Start Health 0 - 100
+   * @param strId       Optional: If set this will be the new Ship ID
    * @return void
    */
-  this.createPlayer = function(boolFocus, boolScript, strName, strColor, strLang, numPosX, numPosY, numHealth) {
+  this.createPlayer = function(boolFocus, boolScript, strName, strColor, strLang, numPosX, numPosY, numHealth, strId) {
     var objPlayerConfig = {
       tilemap: $this.options.tilemap,
       camera_focus: boolFocus,
@@ -434,6 +482,9 @@ var PlayGameState = function(game, app, options) {
     objPlayer.setTiledPositionInTiles(numPosX, numPosY);
     if(boolScript) {
       $this.options.ship.id = objPlayer.options.id;
+    }
+    if(typeof(strId) != 'undefined') {
+      objPlayer.options.id = strId;
     }
 
     // Create Minimap Player

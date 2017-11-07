@@ -182,7 +182,7 @@ var MultiPlayerState = function(game, app, options) {
         _game.huds.defaultHUD.removeAllWidgets();
         // Stop MainMenu Music
         _app.getState('MainMenuState').options.music.stop();
-        
+
         // Switch to MultiPlayerCreateState
         var numIndex = $('#map_selection').val();
         var numMultiplayerId = $('#map_selection').find('[value="' + numIndex + '"]').data('id');
