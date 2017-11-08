@@ -148,9 +148,9 @@ var MultiPlayerCreateState = function(game, app, options) {
     strForm += '         <td width="35%" valign="top">';
     strForm += '            Name: <input id="input_name" type="text" class="form-control" placeholder="Game Name">';
     strForm += '            Players: <select id="input_players" class="form-control">';
-    strForm += '               <option value="2">2 Player</option>';
+    strForm += '               <option value="2" selected>2 Player</option>';
     strForm += '               <option value="3">3 Player</option>';
-    strForm += '               <option value="4" selected>4 Player</option>';
+    strForm += '               <option value="4">4 Player</option>';
     strForm += '               <option value="5">5 Player</option>';
     strForm += '               <option value="6">6 Player</option>';
     strForm += '               <option value="7">7 Player</option>';

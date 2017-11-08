@@ -19,7 +19,6 @@ var PlayGameState = function(game, app, options) {
     map: '',
     ship: {},
     tilemap: {},
-    players_count: 1,
     players: [],
     player_state: '',
     map_objects: [],
@@ -191,7 +190,7 @@ var PlayGameState = function(game, app, options) {
 
     // Init Game if Single Player
     if($this.options.single_player) {
-      $this.initGameLoop({});
+      $this.initGameLoop();
     }
   };
 
@@ -227,11 +226,6 @@ var PlayGameState = function(game, app, options) {
        if(objIncoming.type == 'player_connected') {
          $this.loadMultiplayerGame();
        }
-
-       // Set Game Init
-       if(objIncoming.type == 'init_game') {
-         $this.initGameLoop(objIncoming);
-       }
     });
   };
 
@@ -261,12 +255,19 @@ var PlayGameState = function(game, app, options) {
           }
         }
 
-
         // Start Main Player Loop
-        objResponse
-        // TODO: If all slots are full start MAIN_GAME_LOOP
+        if(objResponse.slots > objResponse.connected.length) {
+          // Show Lobby Banner Screen for waiting Players
+          // TODO: banner
+        } else {
+          // Hide Lobby Banner and start MainGameLoop
+          // TODO: Play StartGame Sound
+          setTimeout(function() {
+            // TODO: hide Lobby Banner
+            $this.initGameLoop();
+          }, 2000);
+        }
 
-        // TODO: If not Show Lobby Banner Screen for Players to start
       }
     });
   };
@@ -421,11 +422,6 @@ var PlayGameState = function(game, app, options) {
   this.setMission = function(objMission) {
     $this.options.mission = objMission;
     $this.options.map = objMission.map;
-
-    // Set Player Counts
-    if(typeof(objMission.players) == 'undefined') {
-      $this.options.players_count = objMission.players;
-    }
   };
 
   /**
@@ -823,7 +819,18 @@ var PlayGameState = function(game, app, options) {
    * @return strJson    Json String For the File Output
    */
   $this.getPlayerJson = function() {
-      return $this.options.ship;
+    var objPlayer = $this.getPlayer($this.options.ship.id);
+    var objShip = {
+      id: $this.options.ship.id,
+      name: $this.options.ship.name,
+      color: $this.options.ship.color,
+      health: objPlayer.options.health,
+      loads: objPlayer.options.cannon_loads,
+      direction: $this.options.ship.direction,
+      pos_x: $this.options.ship.pos_x,
+      pos_y: $this.options.ship.pos_y
+    };
+    return objShip;
   };
 
   /**
@@ -937,10 +944,10 @@ var PlayGameState = function(game, app, options) {
    * @description
    * This is the Initialisation for The Main Game Loop
    *
-   * @param objInitGame This is the Init Object
+   * @param void
    * @return void
    */
-  this.initGameLoop = function(objInitGame) {
+  this.initGameLoop = function() {
     setTimeout(function() {
       // Create NPC Players
       var objSpecials = $this.getSpecials();
@@ -1243,7 +1250,7 @@ var PlayGameState = function(game, app, options) {
       if(strShipOrder.indexOf(':') > 0) {
         var strParamJson = strShipOrder.substring(strShipOrder.indexOf(':') + 1);
         var strShipOrder = strShipOrder.substring(0, strShipOrder.indexOf(':'));
-        objParam = JSON.parse(strParamJson);
+        objParam = JSON.parse(strParamJson.replace(/'/g, '"'));
       }
 
       // Set Ship Orders
