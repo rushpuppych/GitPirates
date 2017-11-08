@@ -254,15 +254,19 @@ var PlayGameState = function(game, app, options) {
           var objPlayer = objResponse['connected'][numIndex]['player'];
           if(typeof($this.options.players[objPlayer.id]) == 'undefined') {
             var objPosition = $this.getPlayerPosition(numIndex);
-            $this.createPlayer(false, false, objPlayer.name, objPlayer.color, objPlayer.lang, objPosition.pos_x + 1, objPosition.pos_y + 1, objPlayer.health, objPlayer.id);
+            $this.createPlayer(false, false, objPlayer.name, objPlayer.color, objPlayer.lang, objPosition.x + 1, objPosition.y + 1, objPlayer.health, objPlayer.id);
           } else {
             var objPosition = $this.getPlayerPosition(numIndex);
             $this.options.players[objPlayer.id].setTiledPositionInTiles(objPosition.x, objPosition.y);
           }
         }
 
+
         // Start Main Player Loop
+        objResponse
         // TODO: If all slots are full start MAIN_GAME_LOOP
+
+        // TODO: If not Show Lobby Banner Screen for Players to start
       }
     });
   };
@@ -436,6 +440,7 @@ var PlayGameState = function(game, app, options) {
     var objStartPos = {};
     for(var numIndex in $this.options.map_objects) {
       var objMapObject = $this.options.map_objects[numIndex];
+
       if(objMapObject.name == 'START') {
         var numPosX = parseInt(objMapObject.x / 64);
         var numPosY = parseInt(objMapObject.y / 64);
@@ -450,6 +455,7 @@ var PlayGameState = function(game, app, options) {
         }
       }
     }
+
     return objStartPos;
   };
 

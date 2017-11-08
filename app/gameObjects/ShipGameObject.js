@@ -941,7 +941,6 @@ var ShipGameObject = function(game, state, options) {
    * @return void
    */
   $this.setTiledPositionInTiles = function(numX, numY) {
-    var objShip = $this.options.gameObject;
     var objCorrection = _private.getCorrectionPosition($this.options.gameObject);
     $this.options.position.tile_x = numX;
     $this.options.position.tile_y = numY;
