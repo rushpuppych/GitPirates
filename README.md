@@ -31,7 +31,7 @@ cd GitPirates
 npm install
 
 # Run the app
-npm start
+sudo npm start
 ```
 
 And repeat
