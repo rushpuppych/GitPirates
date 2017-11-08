@@ -66,6 +66,20 @@ var Helper = function() {
   };
 
   /**
+   * removeArrayNode
+   * @description
+   * This Method is Removing a Array Node
+   * @param array        This is the target Array
+   * @param from         This is the Delete node
+   * @return to          Optional: This is the Amounts of deleting nodes
+   */  
+  this.removeArrayNode = function(array, from, to) {
+    var rest = array.slice((to || from) + 1 || array.length);
+    array.length = from < 0 ? array.length + from : from;
+    return array.push.apply(array, rest);
+  };  
+  
+  /**
    * externdRecursively
    * @description
    * This Method is Mergin two Object Recursively
