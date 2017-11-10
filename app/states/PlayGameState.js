@@ -16,6 +16,7 @@ var PlayGameState = function(game, app, options) {
   this.options = $.extend({
     single_player: true,
     multiplayer_id: '12345', // this is the uuid of the GameRoom
+    package_timeout: false,
     map: '',
     ship: {},
     tilemap: {},
@@ -213,14 +214,34 @@ var PlayGameState = function(game, app, options) {
 
     // Incoming Message
     $this.options.ws_socket.on($this.options.multiplayer_id, function(objIncoming){
-       // Set Other Player Order
-       if(objIncoming.type == 'player_turn') {
-         if(objIncoming.turn == $this.game_loop.turn) {
-           if(typeof($this.options.game_loop.orders[objIncoming.turn][objIncoming.player_id]) == 'undefined') {
-             $this.options.game_loop.orders[objIncoming.turn][objIncoming.player_id] = objIncoming.order;
-           }
-         }
-       }
+      // Object Casting
+      if(typeof(objIncoming) != 'object') {
+        objIncoming = JSON.parse(objIncoming);
+      }
+
+      // Set Other Player Order
+      if(objIncoming.type == 'player_turn') {
+        if(objIncoming.turn == $this.options.game_loop.turn) {
+          // Set Order Only if no order for this player is set.
+          var orderIsAllreadySet = false;
+          for(var numIndex in $this.options.game_loop.orders[objIncoming.turn]) {
+            if($this.options.game_loop.orders[objIncoming.turn][numIndex]['id'] == objIncoming.player_id) {
+              orderIsAllreadySet = true;
+            }
+          }
+
+          // if no Order is set push new order
+          if(!orderIsAllreadySet) {
+            $this.options.game_loop.orders[objIncoming.turn].push(objIncoming.order);
+          }
+        }
+
+        // Stop Resent Package
+        if(objIncoming.player_id == $this.options.ship.id) {
+          $this.options.package_timeout = false;
+        }
+
+      }
 
        // Create Player
        if(objIncoming.type == 'player_connected') {
@@ -1184,10 +1205,25 @@ var PlayGameState = function(game, app, options) {
         turn: numTurn,
         order: objOrderObj
       }
-      var strSendOrder = JSON.stringify(objSendOrder);
-      $this.options.ws_socket.emit($this.options.multiplayer_id, strSendOrder);
+      $this.options.package_timeout = true;
+      $this.sendMultiplayerOrder(objSendOrder);
     }
   };
+
+  /**
+   * sendMultiplayerOrder
+   * @description
+   * This is waiting for all the Other Players Order
+   *
+   * @param objSendOrder  This is the Order that is send to the Server
+   * @return void
+   */
+  this.sendMultiplayerOrder = function(objSendOrder) {
+    if($this.options.package_timeout) {
+      $this.options.ws_socket.emit($this.options.multiplayer_id, objSendOrder);
+      setTimeout(function() {$this.sendMultiplayerOrder(objSendOrder)}, 100);
+    }
+  }
 
   /**
    * getOtherPlayerOrders
