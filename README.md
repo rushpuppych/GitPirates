@@ -1,6 +1,6 @@
 ![CodePirates](https://github.com/rushpuppych/GitPirates/blob/master/app/assets/images/gui/logo_big.png?raw=true)
 
-GitPirates is a simple Multiplayer Online or Singleplayer game for learning Programming Languages the funny way.
+SourcePirates is a simple Multiplayer Online or Singleplayer game for learning Programming Languages the funny way.
 
 ## Getting Started
 
@@ -30,18 +30,6 @@ npm install
 
 # Run the app
 sudo npm start
-```
-
-And repeat
-
-```
-until finished
-```
-
-End with an example of getting some data out of the system or using it for a little demo
-
-```
-Give an example
 ```
 
 ### Electron-Packager Executable
