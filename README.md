@@ -50,13 +50,27 @@ npm run package-linux
 ## Start Coding
 
 If you want to create your own Ship script there are some code wrappers for different programming Languages in another Git Repository.
-For Example if you want to code your ship in PHP you will find a wrapper and a small Blueprint of a empty PHP Project in:
+At the Moment we have the following QuickStart wrappers.
+
+```
+# PHP
+[PHP_Wrapper](https://github.com/rushpuppych/GitPirates_Setup/tree/master/PHP)
+
+# C++
+coming soon
+
+```
+If you are interested to write your own SourcePirates wrapper for other Languages feel free to Contribute:
+```
 [GitPirates_Setup](https://github.com/rushpuppych/GitPirates_Setup)
+```
+
+
 
 ## Built With
 
 * [Electron](https://electron.atom.io/) - Build cross platform desktop apps with JavaScript, HTML, and CSS.
-* [OpenGameArt](https://opengameart.org/) - Opensource Game Resources.
+* [OpenGameArt](https://opengameart.org/) - OpenSource Game Resources.
 * [KennyAssets](https://kenney.nl/assets) - Game Assets (to buy and sometimes free to use under CC License)
 
 ## Contributing
