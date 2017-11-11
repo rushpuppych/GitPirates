@@ -18,6 +18,7 @@ function createWindow () {
     height: 660,
     resizable: false,
     title: "CodePirates",
+    icon: path.join(__dirname, 'app/assets/icons/64x64.png')
   });
 
   // and load the index.html of the app.
