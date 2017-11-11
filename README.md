@@ -73,7 +73,7 @@ If you are interested to write your own SourcePirates wrapper for other Language
 
 * **Severin Holm** - *Project Lead* - [RushPuppyCH](https://github.com/rushpuppych)
 * **Thomas Breuss** - *Project Cleaning* - [TBreuss](https://github.com/tbreuss)
-* **Achim Grollimund** - *C++ Wrapper Developement* - [EvilAcid](https://github.com/EvilAcid)
+* **Achim Grolimund** - *C++ Wrapper Developement* - [EvilAcid](https://github.com/EvilAcid)
 * **Michel Kugler** - *C++ Wrapper Developement* - [Misch2k](https://github.com/Misch2k)
 * **Thomas Breuss** - *Java Wrapper Developement* - [TBreuss](https://github.com/tbreuss)
 
