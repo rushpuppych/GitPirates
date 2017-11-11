@@ -1,18 +1,16 @@
 ![CodePirates](https://github.com/rushpuppych/GitPirates/blob/master/app/assets/images/gui/logo_big.png?raw=true)
 
-One Paragraph of project description goes here
+GitPirates is a simple Multiplayer Online or Singleplayer game for learning Programming Languages the funny way.
 
 ## Getting Started
 
-These instructions will get you a copy of the project up and running on your local machine for development and testing purposes. See deployment for notes on how to deploy the project on a live system.
+These instructions will get you a copy of the project up and running on your local machine for development and testing purposes. See "Electron-Packager Executable" for notes on how to compile your own executable.
 
 ### Prerequisites
 
-What things you need to install the software and how to install them
+You need Node JS installed to run the SourcePirates game.
+[NodeJs](https://nodejs.org/en/download/)
 
-```
-Give examples
-```
 
 ### Installing
 
@@ -46,6 +44,27 @@ End with an example of getting some data out of the system or using it for a lit
 Give an example
 ```
 
+### Electron-Packager Executable
+
+If you want to create an executable you can use:
+
+```
+# MacOS Executable
+npm run package-mac
+
+# Windows Executable
+npm run package-win
+
+# Linux Executable
+npm run package-linux
+```
+
+## Start Coding
+
+If you want to create your own Ship script there are some code wrappers for different programming Languages in another Git Repository.
+For Example if you want to code your ship in PHP you will find a wrapper and a small Blueprint of a empty PHP Project in:
+[GitPirates_Setup](https://github.com/rushpuppych/GitPirates_Setup)
+
 ## Built With
 
 * [Electron](https://electron.atom.io/) - Build cross platform desktop apps with JavaScript, HTML, and CSS.
@@ -60,6 +79,8 @@ Please read [CONTRIBUTING.md](https://gist.github.com/PurpleBooth/b24679402957c6
 
 * **Severin Holm** - *Initial work* - [RushPuppyCH](https://github.com/rushpuppych)
 * **Thomas Breuss** - *Project Cleaning* - [TBreuss](https://github.com/tbreuss)
+* **Achim Grollimund** - *C++ Wrapper Developement* - [EvilAcid](https://github.com/EvilAcid)
+* **Michel Kugler** - *C++ Wrapper Developement* - [Misch2k](https://github.com/Misch2k)
 
 ## License
 
@@ -67,7 +88,6 @@ This project is licensed under the [CC0 1.0 (Public Domain)](LICENSE.md)
 
 ## Acknowledgments
 
-* Hat tip to anyone who's code was used
-* Inspiration
-* etc
-
+* JavaKara (the boring bug from school): i am sure kara would be better with some Cannons.
+* KennyAssets: After i saw those awesome works i knew its gonna be some Pirates in it.
+* Dancger: The Guy who told me: In gaming its a LOBBY not a LOUNGE !
