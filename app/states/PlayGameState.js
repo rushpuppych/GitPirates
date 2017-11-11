@@ -17,6 +17,7 @@ var PlayGameState = function(game, app, options) {
     single_player: true,
     multiplayer_id: '12345', // this is the uuid of the GameRoom
     package_timeout: false,
+    player_session_base64: '',
     map: '',
     ship: {},
     tilemap: {},
@@ -811,7 +812,8 @@ var PlayGameState = function(game, app, options) {
       player: objPlayerJson,
       players: objPlayersJson,
       specials: objSpecial,
-      map: objMapJson
+      map: objMapJson,
+      session: $this.options.player_session_base64
     };
     return objCoding;
   };
@@ -1179,6 +1181,9 @@ var PlayGameState = function(game, app, options) {
   this.gameLoopReadOutput = function() {
     const objFs = require('fs-jetpack');
     var objOrder = JSON.parse(objFs.read($this.options.ship.iofolder + '/output.json'));
+
+    // Set Local Session for Player
+    $this.options.player_session_base64 = objOrder.session;
 
     // Ship Order
     if(objOrder.order == '') {
