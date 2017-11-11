@@ -55,6 +55,7 @@ At the Moment we have the following QuickStart wrappers.
 
 * [PHP_Wrapper](https://github.com/rushpuppych/GitPirates_Setup/tree/master/PHP)
 * CPP_Wrapper - Coming soon
+* Java_Wrapper - Coming soon
 
 ## Built With
 
@@ -70,10 +71,11 @@ If you are interested to write your own SourcePirates wrapper for other Language
 
 ## Authors
 
-* **Severin Holm** - *Initial work* - [RushPuppyCH](https://github.com/rushpuppych)
+* **Severin Holm** - *Project Lead* - [RushPuppyCH](https://github.com/rushpuppych)
 * **Thomas Breuss** - *Project Cleaning* - [TBreuss](https://github.com/tbreuss)
 * **Achim Grollimund** - *C++ Wrapper Developement* - [EvilAcid](https://github.com/EvilAcid)
 * **Michel Kugler** - *C++ Wrapper Developement* - [Misch2k](https://github.com/Misch2k)
+* **Thomas Breuss** - *Java Wrapper Developement* - [TBreuss](https://github.com/tbreuss)
 
 ## License
 
