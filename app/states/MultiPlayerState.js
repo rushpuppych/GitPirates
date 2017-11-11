@@ -227,7 +227,7 @@ var MultiPlayerState = function(game, app, options) {
   this.loadMultiplayerLobbyGames = function() {
     $.ajax({
       type: "GET",
-      url: 'http://localhost:3000/lobby',
+      url: 'http://139.59.150.218/lobby',
       contentType: 'application/json',
       success: function(strResponse) {
         var objResponse = JSON.parse(strResponse);

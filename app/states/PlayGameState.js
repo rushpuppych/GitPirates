@@ -204,7 +204,7 @@ var PlayGameState = function(game, app, options) {
    * @return void
    */
   this.initializeSocketServer = function() {
-    var objSocket = io('http://localhost:3000');
+    var objSocket = io('http://139.59.150.218/');
     $this.options.ws_socket = objSocket;
 
     // Send Connection
@@ -261,7 +261,7 @@ var PlayGameState = function(game, app, options) {
   this.loadMultiplayerGame = function(fncCallback) {
     $.ajax({
       type: "GET",
-      url: 'http://localhost:3000/game/' + $this.options.multiplayer_id,
+      url: 'http://139.59.150.218/game/' + $this.options.multiplayer_id,
       contentType: 'application/json',
       success: function(strResponse) {
         var objResponse = JSON.parse(strResponse);
@@ -1025,7 +1025,7 @@ var PlayGameState = function(game, app, options) {
     if($this.options.game_loop.step == 'write_input') {
       $this.gameLoopWriteInput();
       $this.options.game_loop.step = 'trigger_script';
-      setTimeout(function() {$this.mainGameLoop();}, 1);
+      setTimeout(function() {$this.mainGameLoop();}, 100);
       return;
     }
 
@@ -1051,7 +1051,7 @@ var PlayGameState = function(game, app, options) {
       if(!$this.options.single_player) {
         if(!$this.getOtherPlayerOrders()){
           // Recall till all Player are finished
-          setTimeout(function() {$this.mainGameLoop();}, 1);
+          setTimeout(function() {$this.mainGameLoop();}, 10);
           return;
         }
       }
@@ -1071,7 +1071,7 @@ var PlayGameState = function(game, app, options) {
         // Recall
         $this.options.game_loop.blockNextStep = true;
         $this.options.game_loop.step = 'set_order';
-        setTimeout(function() {$this.mainGameLoop();}, 1);
+        setTimeout(function() {$this.mainGameLoop();}, 10);
         return;
       }
     }
@@ -1106,7 +1106,7 @@ var PlayGameState = function(game, app, options) {
         // Recall
         $this.options.game_loop.blockNextStep = true;
         $this.options.game_loop.step = 'post_events';
-        setTimeout(function() {$this.mainGameLoop();}, 1);
+        setTimeout(function() {$this.mainGameLoop();}, 10);
         return;
       }
     }
@@ -1221,7 +1221,7 @@ var PlayGameState = function(game, app, options) {
   this.sendMultiplayerOrder = function(objSendOrder) {
     if($this.options.package_timeout) {
       $this.options.ws_socket.emit($this.options.multiplayer_id, objSendOrder);
-      setTimeout(function() {$this.sendMultiplayerOrder(objSendOrder)}, 100);
+      setTimeout(function() {$this.sendMultiplayerOrder(objSendOrder);}, 100);
     }
   }
 

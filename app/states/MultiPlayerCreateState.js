@@ -223,7 +223,7 @@ var MultiPlayerCreateState = function(game, app, options) {
         };
         $.ajax({
           type: "POST",
-          url: 'http://localhost:3000/create',
+          url: 'http://139.59.150.218/create',
           data: JSON.stringify(objData),
           contentType: 'application/json'
         });
