@@ -9,6 +9,7 @@ These instructions will get you a copy of the project up and running on your loc
 ### Prerequisites
 
 You need Node JS installed to run the SourcePirates game.
+
 [NodeJs](https://nodejs.org/en/download/)
 
 
@@ -50,22 +51,14 @@ npm run package-linux
 ## Start Coding
 
 If you want to create your own Ship script there are some code wrappers for different programming Languages in another Git Repository.
-At the Moment we have the following QuickStart wrappers.
+At the Moment we have the following QuickStart wrappers.  
 
-```
-# PHP
-[PHP_Wrapper](https://github.com/rushpuppych/GitPirates_Setup/tree/master/PHP)
+* [PHP_Wrapper](https://github.com/rushpuppych/GitPirates_Setup/tree/master/PHP)
+* CPP_Wrapper - Coming soon
 
-# C++
-coming soon
+If you are interested to write your own SourcePirates wrapper for other Languages feel free to Contribute:  
 
-```
-If you are interested to write your own SourcePirates wrapper for other Languages feel free to Contribute:
-```
 [GitPirates_Setup](https://github.com/rushpuppych/GitPirates_Setup)
-```
-
-
 
 ## Built With
 
